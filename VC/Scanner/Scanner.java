@@ -11,6 +11,8 @@ public final class Scanner {
   private StringBuffer currentSpelling;
   private char currentChar;
   private SourcePosition sourcePos;
+  private int colCount;
+  private int lineCount;
 
 // =========================================================
 
@@ -19,8 +21,11 @@ public final class Scanner {
     errorReporter = reporter;
     currentChar = sourceFile.getNextChar();
     debug = false;
+    sourcePos = new SourcePosition();
 
     // you may initialise your counters for line and column numbers here
+      colCount = sourcePos.charStart;
+      lineCount = sourcePos.lineFinish;
   }
 
   public void enableDebugging() {
@@ -35,6 +40,11 @@ public final class Scanner {
 
   // you may save the lexeme of the current token incrementally here
   // you may also increment your line and column counters here
+      colCount = colCount + 1;
+  }
+
+  private void acceptNoCount() {
+      currentChar = sourceFile.getNextChar();
   }
 
   // inspectChar returns the n-th character after currentChar
@@ -52,7 +62,7 @@ public final class Scanner {
   }
 
   private int nextToken() {
-  // Tokens: separators, operators, literals, identifiers and keyworods
+  // Tokens: separators, operators, literals, identifiers and keywords
        
     switch (currentChar) {
        // separators 
@@ -70,10 +80,29 @@ public final class Scanner {
       	} else {
 	   return Token.ERROR;
         }
+        case '"':
+            //attempt to recognise string literal
+            System.out.println("Scanning string literal");
+            accept();
+            currentSpelling.append(currentChar);
+            //scan until next "
+            while (currentChar != '"') {
+                accept();
+                currentSpelling.append(currentChar);
+                if (currentChar == SourceFile.eof) {
+                    currentSpelling.equals(Token.spell(Token.EOF));
+                    break;
+                }
+            }
+            accept();
+            System.out.println("Valid string literal");
+            return Token.STRINGLITERAL;
 
     // ....
-    case SourceFile.eof:	
+    case SourceFile.eof:
 	currentSpelling.append(Token.spell(Token.EOF));
+    sourcePos.charStart = 1;
+    sourcePos.charFinish = 1;
 	return Token.EOF;
     default:
 	break;
@@ -84,9 +113,21 @@ public final class Scanner {
   }
 
   void skipSpaceAndComments() {
+      if (Character.isWhitespace(currentChar)) {
+          acceptNoCount();
+      }
+      if (currentChar == '/') {
+          acceptNoCount();
+          if (currentChar == '/') {
+              while (currentChar != '\n') {
+                  acceptNoCount();
+              }
+          }
+      }
   }
 
   public Token getToken() {
+      System.out.println("Scanning for tokens");
     Token tok;
     int kind;
 
