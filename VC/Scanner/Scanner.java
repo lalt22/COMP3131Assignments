@@ -10,6 +10,10 @@ public final class Scanner {
     private ErrorReporter errorReporter;
     private StringBuffer currentSpelling;
     private char currentChar;
+
+    private int linePos;
+
+    private int colPos;
     private SourcePosition sourcePos;
 
 // =========================================================
@@ -19,6 +23,8 @@ public final class Scanner {
         errorReporter = reporter;
         currentChar = sourceFile.getNextChar();
         debug = false;
+        linePos = 1;
+        colPos = 1;
 
         // you may initialise your counters for line and column numbers here
     }
@@ -30,7 +36,13 @@ public final class Scanner {
     // accept gets the next character from the source program.
 
     private void accept() {
-
+        if (currentChar == '\n') {
+            linePos++;
+            colPos = 1;
+        }
+        else {
+            colPos++;
+        }
         currentChar = sourceFile.getNextChar();
 
         // you may save the lexeme of the current token incrementally here
@@ -64,58 +76,22 @@ public final class Scanner {
 
     private int nextToken() {
         // Tokens: separators, operators, literals, identifiers and keyworods
-        System.out.println("Identifying character " + currentChar);
-        char inspectedChar;
+
+//        System.out.println("Identifying character " + currentChar);
         switch (currentChar) {
-            //comments OR DIV
+            //DIV
             case '/':
-                inspectedChar = inspectChar(1);
-                //RULE OUT COMMENTS
-                if (inspectedChar == '/') {
-                    System.out.println("Comment detected, ignoring");
-                    int i = 2;
-                    while (true) {
-                        inspectedChar = inspectChar(i);
-                        if (inspectedChar == '\n' || inspectedChar == SourceFile.eof) {
-                            break;
-                        }
-                        i++;
-                    }
-                    eatChars(i);
-                    break;
-                }
-                else if (currentChar == '*') {
-                    System.out.println("Start of comment detected");
-                    acceptNoCount();
-                    while (currentChar != '*') {
-                        acceptNoCount();
-                    }
-                    if (currentChar == '*') {
-                        while (currentChar == '*') {
-                            acceptNoCount();
-                        }
-                        if (currentChar == '/') {
-                            System.out.println("Valid comment detected, ignoring");
-                            acceptNoCount();
-                        }
-                    }
-                }
-                //If not comment, DIV token
-                else {
-                    accept();
-                    currentSpelling.append((Token.spell(Token.DIV)));
-                    return Token.DIV;
-                }
-                System.out.println("Ended case for /");
+                accept();
+                currentSpelling.append((Token.spell(Token.DIV)));
+                return Token.DIV;
+
                 // separators
             case '(':
-                System.out.println("Detecting LPAREN");
                 currentSpelling.append(Token.spell(Token.LPAREN));
                 accept();
                 return Token.LPAREN;
             case '.':
                 //  attempting to recognise a float
-
             case '|':
                 accept();
                 if (currentChar == '|') {
@@ -154,49 +130,49 @@ public final class Scanner {
                 currentSpelling.append(Token.spell(Token.EOF));
                 return Token.EOF;
             default:
-                //whitespace
-                if (Character.isWhitespace(currentChar)) {
-                    System.out.println("Whitespace detected, ignoring");
-                    acceptNoCount();
-                }
-                break;
         }
-
         accept();
         return Token.ERROR;
     }
 
-//  void skipSpaceAndComments() {
-//      while (currentChar != SourceFile.eof) {
-//          if (currentChar == '/') {
-//              acceptNoCount();
-//              //detect comments structured like this
-//              if (currentChar == '/') {
-//
-//                  acceptNoCount();
-//              }
-//              /*detect comments structured like this*/
-//              if (currentChar == '*') {
-//                  System.out.println("Start of comment detected");
-//                  char prevChar = currentChar;
-//                  while (currentChar != '/') {
-//                      prevChar = currentChar;
-//                      acceptNoCount();
-//                  }
-//                  System.out.println(prevChar);
-//                  System.out.println(currentChar);
-//                  if (currentChar == '/' && prevChar == '*') {
-//                      System.out.println("Valid comment detected, ignoring");
-//                  } else {
-//                      System.out.println("Error, invalid comment");
-//                  }
-//              }
-//          }
-//          System.out.println(currentChar);
-//          acceptNoCount();
-//      }
-//    System.out.println("exiting skipwhitespace");
-//  }
+    boolean doCurAndNextCharsMatch(char current, char next) {
+        return currentChar == current && inspectChar(1) == next;
+    }
+  void skipSpaceAndComments() {
+            boolean inSingleLineComment = false;
+            boolean inMultiLineComment = false;
+            while (true) {
+                if (inSingleLineComment && currentChar == '\n') {
+                    accept();
+                    break;
+                }
+                if (Character.isWhitespace(currentChar)) {
+                    accept();
+                }
+                if (doCurAndNextCharsMatch('/', '/')) {
+                    inSingleLineComment = true;
+                }
+                if (doCurAndNextCharsMatch('/', '*')) {
+                    inMultiLineComment = true;
+                }
+                if (inSingleLineComment || inMultiLineComment) {
+                    if (doCurAndNextCharsMatch('*', '/')) {
+                        accept();
+                        accept();
+                        inMultiLineComment = false;
+                        continue;
+                    }
+                    if (inspectChar(1) == SourceFile.eof) {
+                        System.out.println("ERROR: Unterminated Comment");
+                        break;
+                    }
+                    accept();
+                }
+                else {
+                    break;
+                }
+            }
+  }
 
     public Token getToken() {
         Token tok;
@@ -204,15 +180,21 @@ public final class Scanner {
 
         // skip white space and comments
 
-//   skipSpaceAndComments();
+        skipSpaceAndComments();
 
         currentSpelling = new StringBuffer("");
 
-        sourcePos = new SourcePosition();
+//        sourcePos = new SourcePosition();
+        int initialColPosition = colPos;
 
         // You must record the position of the current token somehow
-        System.out.println("Calling nextToken");
         kind = nextToken();
+        int tokenLength = colPos - initialColPosition;
+        //EOF stuff
+        if (tokenLength == 0) {
+            tokenLength = 1; //LOL
+        }
+        sourcePos = new SourcePosition(linePos, initialColPosition, initialColPosition + tokenLength -1);
 
         tok = new Token(kind, currentSpelling.toString(), sourcePos);
 
