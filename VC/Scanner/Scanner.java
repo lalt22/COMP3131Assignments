@@ -74,62 +74,249 @@ public final class Scanner {
         return sourceFile.inspectChar(nthChar);
     }
 
+    private boolean validEscapeChars(char esc) {
+        if (esc == 't' ||esc == 'n' ||esc == 'r' || esc == '\'' ||esc == '"' || esc == '\\') {
+            return true;
+        }
+        return false;
+    }
+
     private int nextToken() {
         // Tokens: separators, operators, literals, identifiers and keyworods
 
 //        System.out.println("Identifying character " + currentChar);
         switch (currentChar) {
-            //DIV
-            case '/':
-                accept();
-                currentSpelling.append((Token.spell(Token.DIV)));
-                return Token.DIV;
-
                 // separators
             case '(':
                 currentSpelling.append(Token.spell(Token.LPAREN));
                 accept();
                 return Token.LPAREN;
-            case '.':
-                //  attempting to recognise a float
+            case ')':
+                currentSpelling.append(Token.spell(Token.RPAREN));
+                accept();
+                return Token.RPAREN;
+
+            case '{':
+                currentSpelling.append(Token.spell(Token.LCURLY));
+                accept();
+                return Token.LCURLY;
+            case '}':
+                currentSpelling.append(Token.spell(Token.RCURLY));
+                accept();
+                return Token.RCURLY;
+            case '[':
+                currentSpelling.append(Token.spell(Token.LBRACKET));
+                accept();
+                return Token.LBRACKET;
+            case ']':
+                currentSpelling.append(Token.spell(Token.RBRACKET));
+                accept();
+                return Token.RBRACKET;
+
+            //operators
+            case '+':
+                currentSpelling.append(Token.spell(Token.PLUS));
+                accept();
+                return Token.PLUS;
+            case '-':
+                currentSpelling.append(Token.spell(Token.MINUS));
+                accept();
+                return Token.MINUS;
+            case '/':
+                accept();
+                currentSpelling.append((Token.spell(Token.DIV)));
+                return Token.DIV;
+            case '!':
+                if (inspectChar(1) == '=') {
+                    currentSpelling.append(Token.spell(Token.NOTEQ));
+                    accept();
+                    return Token.NOTEQ;
+                }
+                else {
+                    currentSpelling.append(Token.spell(Token.NOT));
+                    accept();
+                    return Token.NOT;
+                }
+            case '=':
+                if (inspectChar(1) == '=') {
+                    currentSpelling.append(Token.spell(Token.EQEQ));
+                    accept();
+                    return Token.EQEQ;
+                }
+                else {
+                    currentSpelling.append(Token.spell(Token.EQ));
+                    accept();
+                    return Token.EQ;
+                }
+            case '<':
+                if (inspectChar(1) == '=') {
+                    currentSpelling.append(Token.spell(Token.LTEQ));
+                    accept();
+                    return Token.LTEQ;
+                }
+                else {
+                    currentSpelling.append(Token.spell(Token.LT));
+                    accept();
+                    return Token.LT;
+                }
+            case '>':
+                if (inspectChar(1) == '=') {
+                    currentSpelling.append(Token.spell(Token.GTEQ));
+                    accept();
+                    return Token.GTEQ;
+                }
+                else {
+                    currentSpelling.append(Token.spell(Token.GT));
+                    accept();
+                    return Token.GT;
+                }
+
             case '|':
                 accept();
                 if (currentChar == '|') {
                     accept();
                     return Token.OROR;
                 } else {
+                    currentSpelling.append('|');
                     return Token.ERROR;
                 }
 
-                //operators
+            case '&':
+                accept();
+                if (currentChar == '&') {
+                    accept();
+                    return Token.ANDAND;
+                }
+                else {
+                    currentSpelling.append('&');
+                    return Token.ERROR;
+                }
+
             case '*':
                 accept();
                 currentSpelling.append(Token.spell(Token.MULT));
                 return Token.MULT;
+            //commas, semicolons etc
+            case ';':
+                currentSpelling.append(Token.spell(Token.SEMICOLON));
+                accept();
+                return Token.SEMICOLON;
+            case ',':
+                currentSpelling.append(Token.spell(Token.COMMA));
+                accept();
+                return Token.COMMA;
+
 
             //String literals
             case '"':
                 //attempt to recognise string literal
-                System.out.println("Scanning string literal");
                 accept();
                 currentSpelling.append(currentChar);
-                //scan until next "
-                while (currentChar != '"') {
-                    accept();
-                    currentSpelling.append(currentChar);
-                    if (currentChar == SourceFile.eof) {
-                        currentSpelling.equals(Token.spell(Token.EOF));
+                //lookahead until next "
+                int i = 1;
+                while (true) {
+                    char inspectedChar = inspectChar(i);
+
+                    //ERROR CATCHING
+                    if (inspectedChar == SourceFile.eof || inspectedChar == '\n') {
+                        System.out.println("ERROR: " + currentSpelling + ": unterminated string");
+                        int j = 1;
+                        while (j < i) {
+                            accept();
+                            j++;
+                        }
+                        accept();
+                        return Token.STRINGLITERAL;
+                    }
+                    if (inspectedChar == '\\') {
+
+                        char escapeChar = inspectChar(i + 1);
+
+                        //CATCH ESCAPE ERRORS
+                        if (!validEscapeChars(escapeChar)) {
+                            System.out.println("Error: \\" + escapeChar + ": illegal escape character");
+                            currentSpelling.delete(0, currentSpelling.length());
+                            while (currentChar != '"') {
+                                currentSpelling.append(currentChar);
+                                accept();
+                            }
+                            accept();
+                            return Token.STRINGLITERAL;
+                        }
+                        else {
+
+                            if (escapeChar == 't') {
+
+                            }
+                        }
+                    }
+                    if (inspectedChar == '"') {
                         break;
                     }
+                    currentSpelling.append(inspectedChar);
+                    i++;
                 }
+                int j = 1;
+                while (j < i) {
+                    accept();
+                    j++;
+                }
+                //get brackets
                 accept();
-                System.out.println("Valid string literal");
+                accept();
                 return Token.STRINGLITERAL;
             // ....
             case SourceFile.eof:
                 currentSpelling.append(Token.spell(Token.EOF));
                 return Token.EOF;
             default:
+                //keywords
+                if (currentChar >= 'a' && currentChar <= 'z') {
+                    String keywordString = new String();
+                    keywordString = keywordString + currentChar;
+                    accept();
+                    while (currentChar >= 'a' && currentChar <= 'z') {
+                        keywordString = keywordString + currentChar;
+                        accept();
+                    }
+                    currentSpelling.append(keywordString);
+                    return Token.ID;
+                }
+
+                //numbers
+                if (Character.isDigit(currentChar)) {
+                    currentSpelling.append(currentChar);
+                    //  attempting to recognise a float
+                    if (inspectChar(1) == '.') {
+                        int initialCol = colPos;
+                        currentSpelling.append('.');
+                        int k = 2;
+                        while (true) {
+                            char lookAhead = inspectChar(k);
+                            if (Character.isDigit(lookAhead)) {
+                                currentSpelling.append(lookAhead);
+                            }
+                            else {
+                                break;
+                            }
+                            k++;
+                        }
+
+                        accept();
+                        int diff = k - initialCol;
+                        for (int l = 0; l < diff; l++) {
+                            accept();
+                        }
+                        return Token.FLOATLITERAL;
+                    }
+                    else {
+                        currentSpelling.delete(0, currentSpelling.length());
+                        currentSpelling.append(currentChar);
+                        accept();
+                        return Token.INTLITERAL;
+                    }
+                }
+
         }
         accept();
         return Token.ERROR;
@@ -144,7 +331,8 @@ public final class Scanner {
             while (true) {
                 if (inSingleLineComment && currentChar == '\n') {
                     accept();
-                    break;
+                    inSingleLineComment = false;
+                    continue;
                 }
                 if (Character.isWhitespace(currentChar)) {
                     accept();
@@ -163,6 +351,7 @@ public final class Scanner {
                         continue;
                     }
                     if (inspectChar(1) == SourceFile.eof) {
+                        String posStr = linePos + "(1).." + linePos + "(1)";
                         System.out.println("ERROR: Unterminated Comment");
                         break;
                     }
