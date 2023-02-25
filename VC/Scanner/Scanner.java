@@ -244,9 +244,12 @@ public final class Scanner {
                             return Token.STRINGLITERAL;
                         }
                         else {
-
+                            for (int m = 0; m < i; m++) {
+                                accept();
+                            }
+                            System.out.println("Current char: |" + currentChar +"| " + "Escape char: |" + escapeChar + "| " + currentSpelling);
                             if (escapeChar == 't') {
-
+                                currentSpelling.append('\t');
                             }
                         }
                     }

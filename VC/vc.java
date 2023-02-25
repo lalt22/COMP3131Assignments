@@ -1,26 +1,33 @@
-/*-*
- *-*
- *** vc.java 07/2/2023
- *-* 
- *-*/
+/*
+ * vc.java           
+ *
+ * F O R   A S S I G N M E N T   2
+ * 
+ * 
+ * Jingling Xue, CSE, UNSW, Sydney NSW 2052, Australia.
+ * 
+ */
 
 package VC;
 
 import VC.Scanner.Scanner;
 import VC.Scanner.SourceFile;
-import VC.Scanner.Token;
+import VC.Recogniser.Recogniser;
 
 public class vc {
 
     private static Scanner scanner;
     private static ErrorReporter reporter;
-    private static Token currentToken;
+    private static Recogniser recogniser;
+
     private static String inputFilename; 
 
- 
     public static void main(String[] args) {
-        System.out.println("I am here...");
-        inputFilename = args[0];
+        if (args.length != 1) {
+          System.out.println("Usage: java VC.vc filename\n");
+          System.exit(1); 
+        } else
+           inputFilename = args[0];
 
         System.out.println("======= The VC compiler =======");
 
@@ -28,10 +35,14 @@ public class vc {
 
         reporter = new ErrorReporter();
         scanner  = new Scanner(source, reporter);
-        scanner.enableDebugging();
+        recogniser = new Recogniser(scanner, reporter);
 
-        do 
-	  currentToken = scanner.getToken();
-        while (currentToken.kind != Token.EOF);
+        recogniser.parseProgram();
+
+        if (reporter.numErrors == 0)
+           System.out.println ("Compilation was successful.");
+        else
+           System.out.println ("Compilation was unsuccessful.");
     }
 }
+
