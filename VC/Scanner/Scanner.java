@@ -86,7 +86,7 @@ public final class Scanner {
 
 //        System.out.println("Identifying character " + currentChar);
         switch (currentChar) {
-                // separators
+            // separators
             case '(':
                 currentSpelling.append(Token.spell(Token.LPAREN));
                 accept();
@@ -328,43 +328,43 @@ public final class Scanner {
     boolean doCurAndNextCharsMatch(char current, char next) {
         return currentChar == current && inspectChar(1) == next;
     }
-  void skipSpaceAndComments() {
-            boolean inSingleLineComment = false;
-            boolean inMultiLineComment = false;
-            while (true) {
-                if (inSingleLineComment && currentChar == '\n') {
+    void skipSpaceAndComments() {
+        boolean inSingleLineComment = false;
+        boolean inMultiLineComment = false;
+        while (true) {
+            if (inSingleLineComment && currentChar == '\n') {
+                accept();
+                inSingleLineComment = false;
+                continue;
+            }
+            if (Character.isWhitespace(currentChar)) {
+                accept();
+            }
+            if (doCurAndNextCharsMatch('/', '/')) {
+                inSingleLineComment = true;
+            }
+            if (doCurAndNextCharsMatch('/', '*')) {
+                inMultiLineComment = true;
+            }
+            if (inSingleLineComment || inMultiLineComment) {
+                if (doCurAndNextCharsMatch('*', '/')) {
                     accept();
-                    inSingleLineComment = false;
+                    accept();
+                    inMultiLineComment = false;
                     continue;
                 }
-                if (Character.isWhitespace(currentChar)) {
-                    accept();
-                }
-                if (doCurAndNextCharsMatch('/', '/')) {
-                    inSingleLineComment = true;
-                }
-                if (doCurAndNextCharsMatch('/', '*')) {
-                    inMultiLineComment = true;
-                }
-                if (inSingleLineComment || inMultiLineComment) {
-                    if (doCurAndNextCharsMatch('*', '/')) {
-                        accept();
-                        accept();
-                        inMultiLineComment = false;
-                        continue;
-                    }
-                    if (inspectChar(1) == SourceFile.eof) {
-                        String posStr = linePos + "(1).." + linePos + "(1)";
-                        System.out.println("ERROR: Unterminated Comment");
-                        break;
-                    }
-                    accept();
-                }
-                else {
+                if (inspectChar(1) == SourceFile.eof) {
+                    String posStr = linePos + "(1).." + linePos + "(1)";
+                    System.out.println("ERROR: Unterminated Comment");
                     break;
                 }
+                accept();
             }
-  }
+            else {
+                break;
+            }
+        }
+    }
 
     public Token getToken() {
         Token tok;
