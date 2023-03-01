@@ -112,27 +112,68 @@ public class Recogniser {
     parseType();
     parseIdent();
     parseParaList();
+    System.out.println("Made it to here");
     parseCompoundStmt();
   }
 
   void parseVarDecl() throws SyntaxError {
-
+      System.out.println("Parsing VarDecl: "+ currentToken);
+      parseType();
+      parseInitDeclaratorList();
+      match(Token.SEMICOLON);
   }
 
   void parseInitDeclaratorList() throws SyntaxError {
-
+      System.out.println("in parseInitDeclaratorList");
+      parseInitDeclarator();
+      while (currentToken.kind != Token.EQ && currentToken.kind != Token.SEMICOLON) {
+          System.out.println("In initDeclaratorList loop");
+          match(Token.COMMA);
+          parseInitDeclarator();
+      }
+      System.out.println("Exiting parseInitDeclaratorList");
   }
 
   void parseInitDeclarator() throws SyntaxError {
-
+      parseDeclarator();
+      if (currentToken.kind == Token.EQ) {
+          match(Token.EQ);
+          parseInitialiser();
+      }
   }
 
   void parseDeclarator() throws SyntaxError {
+        if (currentToken.kind == Token.LBRACKET) {
+            System.out.println("Declaring array");
+            match(Token.LBRACKET);
+            if (currentToken.kind == Token.INTLITERAL) {
+                parseIntLiteral();
+            }
+            match(Token.RBRACKET);
+        }
+        else {
+            System.out.println("Declaring");
+            parseIdent();
+            System.out.println("Exiting parseDeclarator");
+        }
 
   }
 
   void parseInitialiser() throws SyntaxError {
-
+      System.out.println("Parsing initialiser");
+        if (currentToken.kind == Token.LCURLY) {
+            match(Token.LCURLY);
+            if (currentToken.kind == Token.COMMA) {
+                while (currentToken.kind != Token.RCURLY) {
+                    match(Token.COMMA);
+                    parseExpr();
+                }
+            }
+            match(Token.RCURLY);
+        }
+        else {
+            parseExpr();
+        }
   }
 
 // ======================= STATEMENTS ==============================
@@ -170,30 +211,59 @@ public class Recogniser {
     }
   }
     void parseIfStmt() throws SyntaxError {
+        match((Token.IF));
+        match(Token.LPAREN);
+        parseExpr();
+        match(Token.RPAREN);
+        parseStmt();
+
+        //might be janky - do elsestmt
 
     }
 
     void parseForStmt() throws SyntaxError {
+      match(Token.FOR);
+      match(Token.LPAREN);
+      while (currentToken.kind != Token.RPAREN) {
+          if(currentToken.kind != Token.SEMICOLON) {
+              parseExpr();
+          }
+          //double check this, might add an extra ;
+          match(Token.SEMICOLON);
+      }
+      match(Token.RPAREN);
+      parseStmt();
+
 
     }
 
     void parseWhileStmt() throws SyntaxError {
-
+      match((Token.WHILE));
+      match(Token.LPAREN);
+      parseExpr();
+      match(Token.RPAREN);
+      parseStmt();
     }
 
     void parseBreakStmt() throws SyntaxError {
-
+        match(Token.BREAK);
+        match(Token.SEMICOLON);
     }
 
   void parseContinueStmt() throws SyntaxError {
       System.out.println("Parsing continue statement: "+ currentToken);
-    match(Token.CONTINUE);
-    match(Token.SEMICOLON);
+      match(Token.CONTINUE);
+      match(Token.SEMICOLON);
 
   }
 
   void parseReturnStmt() throws SyntaxError {
+      match(Token.RETURN);
 
+      //find the condition to parse an expression
+      parseExpr();
+
+      match(Token.SEMICOLON);
   }
 
   //what is going on here
@@ -220,9 +290,10 @@ public class Recogniser {
   void parseIdent() throws SyntaxError {
     System.out.println("Parsing ID: " + currentToken);
     if (currentToken.kind == Token.ID) {
-      accept();
-    } else 
-      syntacticError("identifier expected here", "");
+        accept();
+    }
+//    } else
+//      syntacticError("identifier expected here", "");
   }
 
   void parseType() throws SyntaxError {
@@ -461,8 +532,10 @@ public class Recogniser {
     }
 
     void parseParaDecl() throws SyntaxError {
+        System.out.println("entering parseParaDecl");
         parseType();
         parseDeclarator();
+        System.out.println("Exiting parseParaDecl");
     }
 
     void parseArgList() throws SyntaxError {
