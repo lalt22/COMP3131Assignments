@@ -3,7 +3,8 @@
  *** Recogniser.java            
  ***
  ***/
-
+//Eliminate left recursion
+//Make VC grammar LL(1)
 /* At this stage, this parser accepts a subset of VC defined	by
  * the following grammar. 
  *
@@ -63,6 +64,7 @@ public class Recogniser {
   }
 
 // match checks to see f the current token matches tokenExpected.
+    //currentToken initialised to leftmost token in program
 // If so, fetches the next token.
 // If not, reports a syntactic error.
 
@@ -85,10 +87,12 @@ public class Recogniser {
     throw(new SyntaxError());
   }
 
-
 // ========================== PROGRAMS ========================
 
+    //change to (func-decl | var-decl)*
   public void parseProgram() {
+      System.out.println("In recogniser");
+
 
     try {
       parseFuncDecl();
@@ -100,57 +104,101 @@ public class Recogniser {
   }
 
 // ========================== DECLARATIONS ========================
-
+//CHANGE THIS: func-decl -> type identifier para-list compound-stmt
   void parseFuncDecl() throws SyntaxError {
+    System.out.println("Parsing FuncDecl: "+ currentToken);
 
-    match(Token.VOID);
+
+    parseType();
     parseIdent();
-    match(Token.LPAREN);
-    match(Token.RPAREN);
+    parseParaList();
     parseCompoundStmt();
+  }
+
+  void parseVarDecl() throws SyntaxError {
+
+  }
+
+  void parseInitDeclaratorList() throws SyntaxError {
+
+  }
+
+  void parseInitDeclarator() throws SyntaxError {
+
+  }
+
+  void parseDeclarator() throws SyntaxError {
+
+  }
+
+  void parseInitialiser() throws SyntaxError {
+
   }
 
 // ======================= STATEMENTS ==============================
 
-
+//CHANGE: compound-stmt -> "{" var-decl*stmt* "}"
   void parseCompoundStmt() throws SyntaxError {
-
+    System.out.println("Parsing Compound Statement: " + currentToken);
     match(Token.LCURLY);
+    parseVarDecl();
     parseStmtList();
     match(Token.RCURLY);
   }
 
  // Here, a new nontermial has been introduced to define { stmt } *
   void parseStmtList() throws SyntaxError {
-
+    System.out.println("Parsing Statement List:" + currentToken);
     while (currentToken.kind != Token.RCURLY) 
       parseStmt();
   }
 
+  //Complete this w if, for, return etc
   void parseStmt() throws SyntaxError {
-
+    System.out.println("Parsing statement: "+ currentToken);
     switch (currentToken.kind) {
 
     case Token.CONTINUE:
       parseContinueStmt();
       break;
 
+
     default:
-      parseExprStmt();
+      parseCompoundStmt();
       break;
 
     }
   }
+    void parseIfStmt() throws SyntaxError {
+
+    }
+
+    void parseForStmt() throws SyntaxError {
+
+    }
+
+    void parseWhileStmt() throws SyntaxError {
+
+    }
+
+    void parseBreakStmt() throws SyntaxError {
+
+    }
 
   void parseContinueStmt() throws SyntaxError {
-
+      System.out.println("Parsing continue statement: "+ currentToken);
     match(Token.CONTINUE);
     match(Token.SEMICOLON);
 
   }
 
-  void parseExprStmt() throws SyntaxError {
+  void parseReturnStmt() throws SyntaxError {
 
+  }
+
+  //what is going on here
+  void parseExprStmt() throws SyntaxError {
+    System.out.println("Parsing expr statement: " + currentToken);
     if (currentToken.kind == Token.ID
         || currentToken.kind == Token.INTLITERAL
         || currentToken.kind == Token.MINUS
@@ -170,11 +218,19 @@ public class Recogniser {
 
 
   void parseIdent() throws SyntaxError {
-
+    System.out.println("Parsing ID: " + currentToken);
     if (currentToken.kind == Token.ID) {
       accept();
     } else 
       syntacticError("identifier expected here", "");
+  }
+
+  void parseType() throws SyntaxError {
+      System.out.println("Parsing type declaration");
+      if (currentToken.kind == Token.INT ||currentToken.kind == Token.FLOAT ||currentToken.kind == Token.BOOLEAN ||currentToken.kind == Token.VOID) {
+          System.out.println("Type: " + currentToken.spelling);
+          accept();
+      }
   }
 
 // ======================= OPERATORS ======================
@@ -195,28 +251,89 @@ public class Recogniser {
   }
 
 
+  //CHANGE: assignment-expr -> (cond-or-expr "=")*cond-or-expr
   void parseAssignExpr() throws SyntaxError {
 
     parseAdditiveExpr();
 
   }
 
+  void parseCondOrExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.OROR) {
+          accept();
+          parseCondAndExpr();
+          parseCondOrExprPrime();
+      }
+  }
+  void parseCondOrExpr() throws SyntaxError {
+        parseCondAndExpr();
+        parseCondOrExprPrime();
+  }
+
+  void parseCondAndExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.ANDAND) {
+          accept();
+          parseEqualityExpr();
+          parseCondAndExprPrime();
+      }
+  }
+  void parseCondAndExpr() throws SyntaxError {
+        parseEqualityExpr();
+        parseCondAndExprPrime();
+  }
+
+  void parseEqualityExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.EQEQ || currentToken.kind == Token.NOTEQ) {
+          accept();
+          parseRelExpr();
+          parseEqualityExprPrime();
+      }
+  }
+  void parseEqualityExpr() throws SyntaxError {
+        parseRelExpr();
+        parseEqualityExprPrime();
+  }
+
+  void parseRelExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.LT ||currentToken.kind == Token.LTEQ ||currentToken.kind == Token.GT ||currentToken.kind == Token.GTEQ) {
+          accept();
+          parseAdditiveExpr();
+          parseRelExprPrime();
+      }
+
+
+  }
+  void parseRelExpr() throws SyntaxError {
+        parseAdditiveExpr();
+        parseRelExprPrime();
+  }
+
+  void parseAdditiveExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.PLUS || currentToken.kind == Token.MINUS) {
+          acceptOperator();
+          parseMultiplicativeExpr();
+          parseAdditiveExprPrime();
+      }
+      
+    }
   void parseAdditiveExpr() throws SyntaxError {
 
     parseMultiplicativeExpr();
-    while (currentToken.kind == Token.PLUS) {
-      acceptOperator();
-      parseMultiplicativeExpr();
-    }
+    parseAdditiveExprPrime();
+
   }
 
+  void parseMultiplicativeExprPrime() throws SyntaxError {
+      if (currentToken.kind == Token.MULT || currentToken.kind == Token.DIV) {
+          accept();
+          parseUnaryExpr();
+          parseMultiplicativeExprPrime();
+      }
+  }
   void parseMultiplicativeExpr() throws SyntaxError {
 
     parseUnaryExpr();
-    while (currentToken.kind == Token.MULT) {
-      acceptOperator();
-      parseUnaryExpr();
-    }
+    parseMultiplicativeExprPrime();
   }
 
   void parseUnaryExpr() throws SyntaxError {
@@ -229,6 +346,16 @@ public class Recogniser {
         }
         break;
 
+        case Token.PLUS:
+            acceptOperator();
+            parseUnaryExpr();
+            break;
+
+        case Token.NOT:
+            accept();
+            parseUnaryExpr();
+            break;
+
       default:
         parsePrimaryExpr();
         break;
@@ -237,7 +364,6 @@ public class Recogniser {
   }
 
   void parsePrimaryExpr() throws SyntaxError {
-
     switch (currentToken.kind) {
 
       case Token.ID:
@@ -255,6 +381,18 @@ public class Recogniser {
       case Token.INTLITERAL:
         parseIntLiteral();
         break;
+
+        case Token.FLOATLITERAL:
+            parseFloatLiteral();
+            break;
+
+        case Token.BOOLEANLITERAL:
+            parseBooleanLiteral();
+            break;
+
+        case Token.STRINGLITERAL:
+            parseStringLiteral();
+            break;
 
       default:
         syntacticError("illegal parimary expression", currentToken.spelling);
@@ -290,5 +428,60 @@ public class Recogniser {
     } else 
       syntacticError("boolean literal expected here", "");
   }
+
+  void parseVoidLiteral() throws SyntaxError {
+      if (currentToken.kind == Token.VOID) {
+          accept();
+      }else
+          syntacticError("void expected here", "");
+  }
+
+  void parseStringLiteral() throws SyntaxError {
+      if (currentToken.kind == Token.STRINGLITERAL) {
+          accept();
+      }else
+          syntacticError("string literal expected here", "");
+
+  }
+
+  //===================== PARAMETERS ========================
+    void parseParaList() throws SyntaxError {
+      System.out.println("Parsing parameter list");
+        match(Token.LPAREN);
+        parseProperParaList();
+        match(Token.RPAREN);
+    }
+
+    void parseProperParaList() throws SyntaxError {
+        parseParaDecl();
+        while (currentToken.kind != Token.RPAREN) {
+            match(Token.COMMA);
+            parseParaDecl();
+        }
+    }
+
+    void parseParaDecl() throws SyntaxError {
+        parseType();
+        parseDeclarator();
+    }
+
+    void parseArgList() throws SyntaxError {
+        match(Token.LPAREN);
+        parseProperArgList();
+        match(Token.RPAREN);
+    }
+
+    void parseProperArgList() throws SyntaxError {
+        parseArg();
+        while (currentToken.kind != Token.RPAREN) {
+            parseArg();
+        }
+    }
+
+    void parseArg() throws SyntaxError {
+        parseExpr();
+    }
+
+
 
 }
