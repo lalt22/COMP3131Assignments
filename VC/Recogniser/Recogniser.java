@@ -50,6 +50,9 @@ import VC.Scanner.SourcePosition;
 import VC.Scanner.Token;
 import VC.ErrorReporter;
 
+interface ParseFunction {
+    void parse() throws SyntaxError;
+}
 public class Recogniser {
 
     private Scanner scanner;
@@ -143,12 +146,13 @@ public class Recogniser {
     void parseInitDeclaratorList() throws SyntaxError {
         System.out.println("in parseInitDeclaratorList");
         parseInitDeclarator();
-        while (currentToken.kind != Token.SEMICOLON) {
-            System.out.println("In initDeclaratorList loop");
-//          match(Token.COMMA);
-            parseInitDeclarator();
-        }
+//        runParseFunction('*', this::parseCommaSeparatedInitDeclList);
         System.out.println("Exiting parseInitDeclaratorList");
+    }
+
+    void parseCommaSeparatedInitDeclList() throws SyntaxError {
+        match(Token.COMMA);
+        parseInitDeclarator();
     }
 
     void parseInitDeclarator() throws SyntaxError {
@@ -208,21 +212,6 @@ public class Recogniser {
     void parseCompoundStmt() throws SyntaxError {
         System.out.println("Parsing Compound Statement: " + currentToken);
         match(Token.LCURLY);
-        while (currentToken.kind != Token.RCURLY) {
-            while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT ||currentToken.kind == Token.BOOLEAN ||currentToken.kind == Token.VOID) {
-                System.out.println("Parsing variable decl");
-                parseVarDecl();
-            }
-            parseStmtList();
-        }
-
-        match(Token.RCURLY);
-        System.out.println("Exiting compound statement");
-    }
-
-    void parseCompoundStmt2() throws SyntaxError {
-        System.out.println("Parsing Compound Statement: " + currentToken);
-        match(Token.LCURLY);
 //        while (currentToken.kind != Token.RCURLY) {
 //            while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT ||currentToken.kind == Token.BOOLEAN ||currentToken.kind == Token.VOID) {
 //                System.out.println("Parsing variable decl");
@@ -230,17 +219,33 @@ public class Recogniser {
 //            }
 //            parseStmtList();
 //        }
-        parseVarDecl(); // Zero or more
-        parseStmt(); // Zero or more
+//        runParseFunction('*', this::parseVarDecl);
+//        runParseFunction('*', this::parseStmt);
 
         match(Token.RCURLY);
         System.out.println("Exiting compound statement");
     }
-
-    void parseSomething(int num) throws SyntaxError {
-        // Something -> { if-stmt }
-
-    }
+//    void runParseFunction(char times, ParseFunction theParseFunction) throws SyntaxError {
+//        System.out.println("Running runParseFunction");
+//        if (times == '*') {
+//            try {
+//                theParseFunction.parse();
+//            }catch (SyntaxError se) {
+//                return;
+//            }
+//            runParseFunction(times, theParseFunction);
+//        }
+//        else if (times == '?') {
+//            try {
+//                theParseFunction.parse();
+//            }catch (SyntaxError se) {
+//                return;
+//            }
+//        }
+//        else {
+//            throw new SyntaxError("Unsupported " + times);
+//        }
+//    }
 
     // Here, a new nonterminal has been introduced to define { stmt } *
     void parseStmtList() throws SyntaxError {
@@ -255,10 +260,6 @@ public class Recogniser {
         switch (currentToken.kind) {
             case Token.IF:
                 parseIfStmt();
-                break;
-
-            case Token.ELSE:
-                parseElseStmt();
                 break;
 
             case Token.FOR:
@@ -300,26 +301,19 @@ public class Recogniser {
         match(Token.RPAREN);
         parseStmt();
 
-        //might be janky - do elsestmt
-
-    }
-
-    void parseElseStmt() throws SyntaxError {
-        match(Token.ELSE);
-        if (currentToken.kind == Token.IF) {
-            parseIfStmt();
-        }
-        else {
+        if (currentToken.kind == Token.ELSE) {
+            match(Token.ELSE);
             parseStmt();
         }
     }
-
     void parseForStmt() throws SyntaxError {
         match(Token.FOR);
         match(Token.LPAREN);
-        while (currentToken.kind != Token.RPAREN) {
+        int forParams = 0;
+        while (forParams < 3) {
             if(currentToken.kind != Token.SEMICOLON) {
                 parseExpr();
+                forParams++;
             }
             //double check this, might add an extra ;
             match(Token.SEMICOLON);
@@ -354,8 +348,9 @@ public class Recogniser {
         match(Token.RETURN);
 
         //find the condition to parse an expression
-        parseExprStmt();
-
+        if (currentToken.kind != Token.SEMICOLON) {
+            parseExprStmt();
+        }
         match(Token.SEMICOLON);
     }
 
