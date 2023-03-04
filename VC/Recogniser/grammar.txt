@@ -1,8 +1,10 @@
 program             ->  ( func-decl |var-decl )*
 
 // declarations
-func-decl           ->type identifier para-list compound-stmt
-var-decl            ->type init-declarator-list ";"
+decl                ->type identifier (func-or-var-decl)
+func-or-var-decl     ->func-decl | var-decl
+func-decl           ->type? identifier? para-list compound-stmt
+var-decl            ->type? init-declarator-list ";"
 init-declarator-list->init-declarator ( ","init-declarator )*
 init-declarator     ->declarator ( "="initialiser )?
 declarator          ->identifier
@@ -27,6 +29,7 @@ stmt                ->compound-stmt
                     |return-stmt
                     |expr-stmt
 if-stmt             ->if "("expr ")"stmt (elsestmt )?
+elsestmt            -> (if-stmt)? stmt
 for-stmt            ->for "("expr? ";"expr? ";"expr? ")"stmt
 while-stmt          ->while "("expr ")"stmt
 break-stmt          ->break ";"
@@ -60,7 +63,7 @@ unary-expr          -> "+"unary-expr
                     |  "-"unary-expr
                     |  "!"unary-expr
                     |primary-expr
-primary-expr        ->identifierarg-list?
+primary-expr        ->identifier arg-list?
                     |identifier "["expr "]"
                     | "("expr ")"
                     |INTLITERAL

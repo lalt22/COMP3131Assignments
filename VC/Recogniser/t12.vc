@@ -7,5 +7,5 @@ int A() {
     if (i == 77) break;  
     i = i + 1;
   }
-return i;
+  return i;
 }
