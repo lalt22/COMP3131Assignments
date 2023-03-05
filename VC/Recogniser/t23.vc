@@ -1,5 +1,7 @@
 // if misspelled as If
 void main()
 {
-  If (100) x = 1;
+
+  If (100);
+  //x = 1;
 }

@@ -333,13 +333,15 @@ public class Recogniser {
     void parseForStmt() throws SyntaxError {
         match(Token.FOR);
         match(Token.LPAREN);
-        int forParams = 0;
-        while (forParams < 3) {
+        int forSections = 0;
+        while (forSections < 3) {
             if (currentToken.kind != Token.SEMICOLON) {
                 parseExpr();
-                forParams++;
+                forSections++;
+                if (forSections == 3) {
+                    break;
+                }
             }
-            //double check this, might add an extra ;
             match(Token.SEMICOLON);
         }
         match(Token.RPAREN);
@@ -586,7 +588,7 @@ public class Recogniser {
                 if (currentToken.kind == Token.LPAREN) {
                     parseArgList();
                 }
-                if (currentToken.kind == Token.LBRACKET) {
+                else if (currentToken.kind == Token.LBRACKET) {
                     match(Token.LBRACKET);
                     parseExpr();
                     match(Token.RBRACKET);

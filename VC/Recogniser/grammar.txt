@@ -123,7 +123,7 @@ primary-expr        -> identifier arg-list?
                     | BOOLLITERAL
                     | STRINGLITERAL
 
-primary-expr        -> identifier arg-list? ("[" expr "]")?
+primary-expr        -> identifier (arg-list? | ("[" expr "]")?)
                     | "(" expr ")"
                     | INTLITERAL
                     | FLOATLITERAL
