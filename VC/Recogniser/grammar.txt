@@ -1,6 +1,6 @@
 program             ->  ( func-decl | var-decl )*
 
- program'            -> (func-var-decl')*
+program'            -> (func-var-decl')*
 
  // declarations
  func-decl           -> type identifier para-list compound-stmt

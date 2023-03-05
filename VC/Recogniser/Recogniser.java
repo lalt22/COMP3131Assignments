@@ -108,9 +108,6 @@ public class Recogniser {
 
         try {
             while (currentToken.kind != Token.EOF) {
-                //figure out the conditions for funcdecl or vardecl
-                parseType();
-                parseIdent();
                 parseFuncOrVarDecl();
             }
             if (currentToken.kind != Token.EOF) {
@@ -121,20 +118,14 @@ public class Recogniser {
     }
 
     // ========================== DECLARATIONS ========================
-    void parseFuncOrVarDecl() throws SyntaxError {
-        if (currentToken.kind == Token.LPAREN) {
-            parseFuncDecl();
-        } else parseVarDecl();
-    }
-
     //CHANGE THIS: func-decl -> type identifier para-list compound-stmt
-    void parseFuncDecl() throws SyntaxError {
-        System.out.println("Parsing FuncDecl: " + currentToken);
-        parseType();
-        parseIdent();
-        parseParaList();
-        parseCompoundStmt();
-    }
+//    void parseFuncDecl() throws SyntaxError {
+//        System.out.println("Parsing FuncDecl: " + currentToken);
+//        parseType();
+//        parseIdent();
+//        parseParaList();
+//        parseCompoundStmt();
+//    }
 
     void parseVarDecl() throws SyntaxError {
         System.out.println("Parsing VarDecl: " + currentToken);
@@ -143,6 +134,39 @@ public class Recogniser {
         match(Token.SEMICOLON);
     }
 
+    void parseFuncOrVarDecl() throws SyntaxError {
+        parseType();
+        parseIdent();
+
+        //If func-decl
+        if (currentToken.kind == Token.LPAREN) {
+            parseParaList();
+            parseCompoundStmt();
+        }
+
+        //If var-decl
+        else {
+            if (currentToken.kind == Token.LBRACKET) {
+                match(Token.LBRACKET);
+                if (currentToken.kind != Token.RBRACKET) {
+                    parseIntLiteral();
+                }
+                match(Token.RBRACKET);
+            }
+            if (currentToken.kind == Token.EQ) {
+                match(Token.EQ);
+                parseInitialiser();
+            }
+            if (currentToken.kind == Token.COMMA) {
+                while(currentToken.kind != Token.SEMICOLON) {
+                    match(Token.COMMA);
+                    parseInitDeclarator();
+                }
+            }
+            match(Token.SEMICOLON);
+        }
+
+    }
     void parseInitDeclaratorList() throws SyntaxError {
         System.out.println("in parseInitDeclaratorList");
         parseInitDeclarator();
