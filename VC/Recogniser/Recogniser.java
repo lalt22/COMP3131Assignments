@@ -53,6 +53,7 @@ import VC.ErrorReporter;
 interface ParseFunction {
     void parse() throws SyntaxError;
 }
+
 public class Recogniser {
 
     private Scanner scanner;
@@ -87,7 +88,6 @@ public class Recogniser {
 //    }
 
 
-
     // accepts the current token and fetches the next
     void accept() {
         currentToken = scanner.getToken();
@@ -96,7 +96,7 @@ public class Recogniser {
     void syntacticError(String messageTemplate, String tokenQuoted) throws SyntaxError {
         SourcePosition pos = currentToken.position;
         errorReporter.reportError(messageTemplate, tokenQuoted, pos);
-        throw(new SyntaxError());
+        throw (new SyntaxError());
     }
 
 // ========================== PROGRAMS ========================
@@ -116,20 +116,20 @@ public class Recogniser {
             if (currentToken.kind != Token.EOF) {
                 syntacticError("\"%\" wrong result type for a function", currentToken.spelling);
             }
+        } catch (SyntaxError s) {
         }
-        catch (SyntaxError s) {  }
     }
 
     // ========================== DECLARATIONS ========================
     void parseFuncOrVarDecl() throws SyntaxError {
         if (currentToken.kind == Token.LPAREN) {
             parseFuncDecl();
-        }
-        else parseVarDecl();
+        } else parseVarDecl();
     }
+
     //CHANGE THIS: func-decl -> type identifier para-list compound-stmt
     void parseFuncDecl() throws SyntaxError {
-        System.out.println("Parsing FuncDecl: "+ currentToken);
+        System.out.println("Parsing FuncDecl: " + currentToken);
         parseType();
         parseIdent();
         parseParaList();
@@ -137,7 +137,7 @@ public class Recogniser {
     }
 
     void parseVarDecl() throws SyntaxError {
-        System.out.println("Parsing VarDecl: "+ currentToken);
+        System.out.println("Parsing VarDecl: " + currentToken);
         parseType();
         parseInitDeclaratorList();
         match(Token.SEMICOLON);
@@ -161,8 +161,7 @@ public class Recogniser {
         if (currentToken.kind == Token.EQ) {
             match(Token.EQ);
             parseInitialiser();
-        }
-        else if (currentToken.kind == Token.COMMA) {
+        } else if (currentToken.kind == Token.COMMA) {
             match(Token.COMMA);
             parseInitialiser();
         }
@@ -176,8 +175,7 @@ public class Recogniser {
                 parseIntLiteral();
             }
             match(Token.RBRACKET);
-        }
-        else {
+        } else {
             System.out.println("Declaring");
             parseIdent();
             System.out.println("Exiting parseDeclarator");
@@ -200,8 +198,7 @@ public class Recogniser {
                 System.out.println("Exited loop");
             }
             match(Token.RCURLY);
-        }
-        else {
+        } else {
             parseExpr();
         }
     }
@@ -212,13 +209,13 @@ public class Recogniser {
     void parseCompoundStmt() throws SyntaxError {
         System.out.println("Parsing Compound Statement: " + currentToken);
         match(Token.LCURLY);
-//        while (currentToken.kind != Token.RCURLY) {
-//            while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT ||currentToken.kind == Token.BOOLEAN ||currentToken.kind == Token.VOID) {
-//                System.out.println("Parsing variable decl");
-//                parseVarDecl();
-//            }
-//            parseStmtList();
-//        }
+        while (currentToken.kind != Token.RCURLY) {
+            while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
+                System.out.println("Parsing variable decl");
+                parseVarDecl();
+            }
+            parseStmtList();
+        }
 //        runParseFunction('*', this::parseVarDecl);
 //        runParseFunction('*', this::parseStmt);
 
@@ -256,7 +253,7 @@ public class Recogniser {
 
     //Complete this w if, for, return etc
     void parseStmt() throws SyntaxError {
-        System.out.println("Parsing statement: "+ currentToken);
+        System.out.println("Parsing statement: " + currentToken);
         switch (currentToken.kind) {
             case Token.IF:
                 parseIfStmt();
@@ -286,14 +283,14 @@ public class Recogniser {
             default:
                 if (currentToken.kind == Token.LCURLY) {
                     parseCompoundStmt();
-                }
-                else {
+                } else {
                     parseExprStmt();
                 }
                 break;
 
         }
     }
+
     void parseIfStmt() throws SyntaxError {
         match((Token.IF));
         match(Token.LPAREN);
@@ -306,12 +303,13 @@ public class Recogniser {
             parseStmt();
         }
     }
+
     void parseForStmt() throws SyntaxError {
         match(Token.FOR);
         match(Token.LPAREN);
         int forParams = 0;
         while (forParams < 3) {
-            if(currentToken.kind != Token.SEMICOLON) {
+            if (currentToken.kind != Token.SEMICOLON) {
                 parseExpr();
                 forParams++;
             }
@@ -338,7 +336,7 @@ public class Recogniser {
     }
 
     void parseContinueStmt() throws SyntaxError {
-        System.out.println("Parsing continue statement: "+ currentToken);
+        System.out.println("Parsing continue statement: " + currentToken);
         match(Token.CONTINUE);
         match(Token.SEMICOLON);
 
@@ -383,7 +381,7 @@ public class Recogniser {
 
     void parseType() throws SyntaxError {
         System.out.println("Parsing type declaration");
-        if (currentToken.kind == Token.INT ||currentToken.kind == Token.FLOAT ||currentToken.kind == Token.BOOLEAN ||currentToken.kind == Token.VOID) {
+        if (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
             System.out.println("Type: " + currentToken.spelling);
             accept();
         }
@@ -425,11 +423,11 @@ public class Recogniser {
 
     void parseCondOrExprPrime() throws SyntaxError {
         if (currentToken.kind == Token.OROR) {
-            accept();
             parseCondAndExpr();
             parseCondOrExprPrime();
         }
     }
+
     void parseCondOrExpr() throws SyntaxError {
         parseCondAndExpr();
         parseCondOrExprPrime();
@@ -437,11 +435,11 @@ public class Recogniser {
 
     void parseCondAndExprPrime() throws SyntaxError {
         if (currentToken.kind == Token.ANDAND) {
-            accept();
             parseEqualityExpr();
             parseCondAndExprPrime();
         }
     }
+
     void parseCondAndExpr() throws SyntaxError {
         parseEqualityExpr();
         parseCondAndExprPrime();
@@ -454,20 +452,22 @@ public class Recogniser {
             parseEqualityExprPrime();
         }
     }
+
     void parseEqualityExpr() throws SyntaxError {
         parseRelExpr();
         parseEqualityExprPrime();
     }
 
     void parseRelExprPrime() throws SyntaxError {
-        if (currentToken.kind == Token.LT ||currentToken.kind == Token.LTEQ ||currentToken.kind == Token.GT ||currentToken.kind == Token.GTEQ) {
-            accept();
+        if (currentToken.kind == Token.LT || currentToken.kind == Token.LTEQ || currentToken.kind == Token.GT || currentToken.kind == Token.GTEQ) {
+            acceptOperator();
             parseAdditiveExpr();
             parseRelExprPrime();
         }
 
 
     }
+
     void parseRelExpr() throws SyntaxError {
         parseAdditiveExpr();
         parseRelExprPrime();
@@ -481,8 +481,8 @@ public class Recogniser {
         }
 
     }
-    void parseAdditiveExpr() throws SyntaxError {
 
+    void parseAdditiveExpr() throws SyntaxError {
         parseMultiplicativeExpr();
         parseAdditiveExprPrime();
 
@@ -490,22 +490,20 @@ public class Recogniser {
 
     void parseMultiplicativeExprPrime() throws SyntaxError {
         if (currentToken.kind == Token.MULT || currentToken.kind == Token.DIV) {
-            accept();
+            acceptOperator();
             parseUnaryExpr();
             parseMultiplicativeExprPrime();
         }
     }
-    void parseMultiplicativeExpr() throws SyntaxError {
 
+    void parseMultiplicativeExpr() throws SyntaxError {
         parseUnaryExpr();
         parseMultiplicativeExprPrime();
     }
 
     void parseUnaryExpr() throws SyntaxError {
-
         switch (currentToken.kind) {
-            case Token.MINUS:
-            {
+            case Token.MINUS: {
                 acceptOperator();
                 parseUnaryExpr();
             }
@@ -529,7 +527,7 @@ public class Recogniser {
     }
 
     void parsePrimaryExpr() throws SyntaxError {
-        System.out.println("Parsing primary expression: " + currentToken.spelling );
+        System.out.println("Parsing primary expression: " + currentToken.spelling);
         switch (currentToken.kind) {
 
             case Token.ID:
@@ -538,8 +536,7 @@ public class Recogniser {
                 if (currentToken.kind == Token.LPAREN) {
                     parseArgList();
                 }
-                else if (currentToken.kind == Token.LBRACKET) {
-                    System.out.println("Expressing array?");
+                if (currentToken.kind == Token.LBRACKET) {
                     match(Token.LBRACKET);
                     parseExpr();
                     match(Token.RBRACKET);
@@ -547,12 +544,10 @@ public class Recogniser {
                 break;
 
             case Token.LPAREN:
-            {
-                accept();
+                match(Token.LPAREN);
                 parseExpr();
                 match(Token.RPAREN);
-            }
-            break;
+                break;
 
             case Token.INTLITERAL:
                 parseIntLiteral();
@@ -608,14 +603,14 @@ public class Recogniser {
     void parseVoidLiteral() throws SyntaxError {
         if (currentToken.kind == Token.VOID) {
             accept();
-        }else
+        } else
             syntacticError("void expected here", "");
     }
 
     void parseStringLiteral() throws SyntaxError {
         if (currentToken.kind == Token.STRINGLITERAL) {
             accept();
-        }else
+        } else
             syntacticError("string literal expected here", "");
 
     }
@@ -662,7 +657,6 @@ public class Recogniser {
         System.out.println("Parsing argument: " + currentToken.spelling);
         parseExpr();
     }
-
 
 
 }
