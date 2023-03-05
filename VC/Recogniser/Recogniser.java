@@ -381,11 +381,32 @@ public class Recogniser {
 
     void parseType() throws SyntaxError {
         System.out.println("Parsing type declaration");
-        if (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
+        if (nextTokenIsType()) {
             System.out.println("Type: " + currentToken.spelling);
             accept();
         }
     }
+
+    boolean nextTokenIsType() {
+        return currentToken.kind == Token.INT
+                || currentToken.kind == Token.FLOAT
+                || currentToken.kind == Token.BOOLEAN
+                || currentToken.kind == Token.VOID;
+    }
+    boolean nextTokenStartsExpr() {
+        return currentToken.kind == Token.PLUS
+                || currentToken.kind == Token.MINUS
+                || currentToken.kind == Token.NOT
+                || currentToken.kind == Token.LPAREN
+                || currentToken.kind == Token.ID
+                || currentToken.kind == Token.INTLITERAL
+                || currentToken.kind == Token.FLOATLITERAL
+                || currentToken.kind == Token.BOOLEANLITERAL
+                || currentToken.kind == Token.STRINGLITERAL;
+
+    }
+    //===
+
 
 // ======================= OPERATORS ======================
 
@@ -615,11 +636,13 @@ public class Recogniser {
 
     }
 
-    //===================== PARAMETERS ========================
+//================== PARAMETERS ========================
     void parseParaList() throws SyntaxError {
         System.out.println("Parsing parameter list");
         match(Token.LPAREN);
-        parseProperParaList();
+        if (nextTokenIsType()) {
+            parseProperParaList();
+        }
         match(Token.RPAREN);
     }
 
@@ -639,7 +662,9 @@ public class Recogniser {
     void parseArgList() throws SyntaxError {
         System.out.println("Parsing arglist");
         match(Token.LPAREN);
-        parseProperArgList();
+        if (nextTokenStartsExpr()) {
+            parseProperArgList();
+        }
         match(Token.RPAREN);
     }
 
