@@ -459,17 +459,13 @@ public class Recogniser {
 
 
     void parseAssignExpr() throws SyntaxError {
-        while (currentToken.kind != Token.SEMICOLON
-                && currentToken.kind != Token.COMMA
-                && currentToken.kind != Token.RPAREN
-                && currentToken.kind != Token.RCURLY
-                && currentToken.kind != Token.RBRACKET) {
+        while (nextTokenStartsExpr()) {
             System.out.println("Current token is: " + currentToken.spelling);
             parseCondOrExpr();
             if (currentToken.kind == Token.EQ) {
                 match(Token.EQ);
             }
-
+            else break;
         }
     }
 
@@ -593,6 +589,7 @@ public class Recogniser {
                     parseExpr();
                     match(Token.RBRACKET);
                 }
+                System.out.println("Exiting parsePrimaryExpr w Identifier first");
                 break;
 
             case Token.LPAREN:
