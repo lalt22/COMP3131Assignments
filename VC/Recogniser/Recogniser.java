@@ -236,7 +236,7 @@ public class Recogniser {
         while (currentToken.kind != Token.RCURLY) {
             while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
                 System.out.println("Parsing variable decl");
-                parseVarDecl();
+                parseFuncOrVarDecl();
             }
             parseStmtList();
         }
