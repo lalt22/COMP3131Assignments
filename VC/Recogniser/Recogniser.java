@@ -192,6 +192,7 @@ public class Recogniser {
     }
 
     void parseDeclarator() throws SyntaxError {
+        parseIdent();
         if (currentToken.kind == Token.LBRACKET) {
             System.out.println("Declaring array");
             match(Token.LBRACKET);
@@ -199,11 +200,12 @@ public class Recogniser {
                 parseIntLiteral();
             }
             match(Token.RBRACKET);
-        } else {
-            System.out.println("Declaring");
-            parseIdent();
-            System.out.println("Exiting parseDeclarator");
         }
+//        else {
+//            System.out.println("Declaring");
+//            parseIdent();
+//            System.out.println("Exiting parseDeclarator");
+//        }
 
     }
 
