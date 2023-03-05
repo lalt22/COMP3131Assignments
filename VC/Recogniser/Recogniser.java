@@ -373,7 +373,10 @@ public class Recogniser {
         if (currentToken.kind != Token.SEMICOLON) {
             parseExprStmt();
         }
-        match(Token.SEMICOLON);
+        else {
+            match(Token.SEMICOLON);
+        }
+
     }
 
     //what is going on here
