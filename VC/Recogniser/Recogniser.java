@@ -3,45 +3,6 @@
  *** Recogniser.java
  ***
  ***/
-//Eliminate left recursion
-//Make VC grammar LL(1)
-/* At this stage, this parser accepts a subset of VC defined	by
- * the following grammar.
- *
- * You need to modify the supplied parsing methods (if necessary) and
- * add the missing ones to obtain a parser for the VC language.
- *
- * 19-Feb-2022
-
-program       -> func-decl
-
-// declaration
-
-func-decl     -> void identifier "(" ")" compound-stmt
-
-identifier    -> ID
-
-// statements
-compound-stmt -> "{" stmt* "}"
-stmt          -> continue-stmt
-    	      |  expr-stmt
-continue-stmt -> continue ";"
-expr-stmt     -> expr? ";"
-
-// expressions
-expr                -> assignment-expr
-assignment-expr     -> additive-expr
-additive-expr       -> multiplicative-expr
-                    |  additive-expr "+" multiplicative-expr
-multiplicative-expr -> unary-expr
-	            |  multiplicative-expr "*" unary-expr
-unary-expr          -> "-" unary-expr
-		    |  primary-expr
-
-primary-expr        -> identifier
- 		    |  INTLITERAL
-		    | "(" expr ")"
-*/
 
 package VC.Recogniser;
 
@@ -49,10 +10,6 @@ import VC.Scanner.Scanner;
 import VC.Scanner.SourcePosition;
 import VC.Scanner.Token;
 import VC.ErrorReporter;
-
-interface ParseFunction {
-    void parse() throws SyntaxError;
-}
 
 public class Recogniser {
 
@@ -63,8 +20,16 @@ public class Recogniser {
     public Recogniser(Scanner lexer, ErrorReporter reporter) {
         scanner = lexer;
         errorReporter = reporter;
-
         currentToken = scanner.getToken();
+
+
+    }
+
+    boolean showLog = false;
+    void log(Object o) {
+        if (showLog) {
+//            System.out.println(o);
+        }
     }
 
 // match checks to see f the current token matches tokenExpected.
@@ -79,13 +44,6 @@ public class Recogniser {
             syntacticError("\"%\" expected here", Token.spell(tokenExpected));
         }
     }
-
-//    boolean checkMatch(int tokenExpected) throws SyntaxError {
-//        if (currentToken.kind == tokenExpected) {
-//            currentToken = scanner.getToken();
-//        } else
-//            syntacticError("\"%\" expected here", Token.spell(tokenExpected));
-//    }
 
 
     // accepts the current token and fetches the next
@@ -103,9 +61,7 @@ public class Recogniser {
 
     //change to (func-decl | var-decl)*
     public void parseProgram() {
-        System.out.println("In recogniser");
-
-
+        log("In recogniser");
         try {
             while (currentToken.kind != Token.EOF) {
                 parseFuncOrVarDecl();
@@ -118,22 +74,6 @@ public class Recogniser {
     }
 
     // ========================== DECLARATIONS ========================
-    //CHANGE THIS: func-decl -> type identifier para-list compound-stmt
-//    void parseFuncDecl() throws SyntaxError {
-//        System.out.println("Parsing FuncDecl: " + currentToken);
-//        parseType();
-//        parseIdent();
-//        parseParaList();
-//        parseCompoundStmt();
-//    }
-
-    void parseVarDecl() throws SyntaxError {
-        System.out.println("Parsing VarDecl: " + currentToken);
-        parseType();
-        parseInitDeclaratorList();
-        match(Token.SEMICOLON);
-    }
-
     void parseFuncOrVarDecl() throws SyntaxError {
         parseType();
         parseIdent();
@@ -165,22 +105,10 @@ public class Recogniser {
             }
             match(Token.SEMICOLON);
         }
-
-    }
-    void parseInitDeclaratorList() throws SyntaxError {
-        System.out.println("in parseInitDeclaratorList");
-        parseInitDeclarator();
-//        runParseFunction('*', this::parseCommaSeparatedInitDeclList);
-        System.out.println("Exiting parseInitDeclaratorList");
-    }
-
-    void parseCommaSeparatedInitDeclList() throws SyntaxError {
-        match(Token.COMMA);
-        parseInitDeclarator();
     }
 
     void parseInitDeclarator() throws SyntaxError {
-        System.out.println("In parseInitDeclarator");
+        log("In parseInitDeclarator");
         parseDeclarator();
         if (currentToken.kind == Token.EQ) {
             match(Token.EQ);
@@ -194,34 +122,28 @@ public class Recogniser {
     void parseDeclarator() throws SyntaxError {
         parseIdent();
         if (currentToken.kind == Token.LBRACKET) {
-            System.out.println("Declaring array");
+            log("Declaring array");
             match(Token.LBRACKET);
             if (currentToken.kind == Token.INTLITERAL) {
                 parseIntLiteral();
             }
             match(Token.RBRACKET);
         }
-//        else {
-//            System.out.println("Declaring");
-//            parseIdent();
-//            System.out.println("Exiting parseDeclarator");
-//        }
-
     }
 
     void parseInitialiser() throws SyntaxError {
-        System.out.println("Parsing initialiser");
+        log("Parsing initialiser");
         if (currentToken.kind == Token.LCURLY) {
-            System.out.println("Declaring array contents");
+            log("Declaring array contents");
             match(Token.LCURLY);
             parseExpr();
             if (currentToken.kind == Token.COMMA) {
                 while (currentToken.kind != Token.RCURLY) {
                     match(Token.COMMA);
-                    System.out.println("lkfkldjsakjfjkfasdjkl");
+                    log("lkfkldjsakjfjkfasdjkl");
                     parseExpr();
                 }
-                System.out.println("Exited loop");
+                log("Exited loop");
             }
             match(Token.RCURLY);
         } else {
@@ -233,53 +155,29 @@ public class Recogniser {
 
     //CHANGE: compound-stmt -> "{" var-decl*stmt* "}"
     void parseCompoundStmt() throws SyntaxError {
-        System.out.println("Parsing Compound Statement: " + currentToken);
+        log("Parsing Compound Statement: " + currentToken);
         match(Token.LCURLY);
         while (currentToken.kind != Token.RCURLY) {
             while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
-                System.out.println("Parsing variable decl");
+                log("Parsing variable decl");
                 parseFuncOrVarDecl();
             }
             parseStmtList();
         }
-//        runParseFunction('*', this::parseVarDecl);
-//        runParseFunction('*', this::parseStmt);
 
         match(Token.RCURLY);
-        System.out.println("Exiting compound statement");
+        log("Exiting compound statement");
     }
-//    void runParseFunction(char times, ParseFunction theParseFunction) throws SyntaxError {
-//        System.out.println("Running runParseFunction");
-//        if (times == '*') {
-//            try {
-//                theParseFunction.parse();
-//            }catch (SyntaxError se) {
-//                return;
-//            }
-//            runParseFunction(times, theParseFunction);
-//        }
-//        else if (times == '?') {
-//            try {
-//                theParseFunction.parse();
-//            }catch (SyntaxError se) {
-//                return;
-//            }
-//        }
-//        else {
-//            throw new SyntaxError("Unsupported " + times);
-//        }
-//    }
-
     // Here, a new nonterminal has been introduced to define { stmt } *
     void parseStmtList() throws SyntaxError {
-        System.out.println("Parsing Statement List:" + currentToken);
+        log("Parsing Statement List:" + currentToken);
         while (currentToken.kind != Token.RCURLY)
             parseStmt();
     }
 
     //Complete this w if, for, return etc
     void parseStmt() throws SyntaxError {
-        System.out.println("Parsing statement: " + currentToken);
+        log("Parsing statement: " + currentToken);
         switch (currentToken.kind) {
             case Token.IF:
                 parseIfStmt();
@@ -364,7 +262,7 @@ public class Recogniser {
     }
 
     void parseContinueStmt() throws SyntaxError {
-        System.out.println("Parsing continue statement: " + currentToken);
+        log("Parsing continue statement: " + currentToken);
         match(Token.CONTINUE);
         match(Token.SEMICOLON);
 
@@ -373,7 +271,6 @@ public class Recogniser {
     void parseReturnStmt() throws SyntaxError {
         match(Token.RETURN);
 
-        //find the condition to parse an expression
         if (currentToken.kind != Token.SEMICOLON) {
             parseExprStmt();
         }
@@ -383,9 +280,8 @@ public class Recogniser {
 
     }
 
-    //what is going on here
     void parseExprStmt() throws SyntaxError {
-        System.out.println("Parsing expr statement: " + currentToken);
+        log("Parsing expr statement: " + currentToken);
         if (currentToken.kind != Token.SEMICOLON) {
             parseExpr();
             match(Token.SEMICOLON);
@@ -400,22 +296,20 @@ public class Recogniser {
     // Call parseIdent rather than match(Token.ID).
     // In Assignment 3, an Identifier node will be constructed in here.
 
-
     void parseIdent() throws SyntaxError {
-        System.out.println("Parsing ID: " + currentToken);
+        log("Parsing ID: " + currentToken);
         if (currentToken.kind == Token.ID) {
             accept();
         }
-//    } else
-//      syntacticError("identifier expected here", "");
     }
 
     void parseType() throws SyntaxError {
-        System.out.println("Parsing type declaration");
+        log("Parsing type declaration");
         if (nextTokenIsType()) {
-            System.out.println("Type: " + currentToken.spelling);
+            log("Type: " + currentToken.spelling);
             accept();
         }
+        else {syntacticError("Wrong result type for function", currentToken.spelling);}
     }
 
     boolean nextTokenIsType() {
@@ -453,14 +347,14 @@ public class Recogniser {
 // ======================= EXPRESSIONS ======================
 
     void parseExpr() throws SyntaxError {
-        System.out.println("Parsing expression");
+        log("Parsing expression");
         parseAssignExpr();
     }
 
 
     void parseAssignExpr() throws SyntaxError {
         while (nextTokenStartsExpr()) {
-            System.out.println("Current token is: " + currentToken.spelling);
+            log("Current token is: " + currentToken.spelling);
             parseCondOrExpr();
             if (currentToken.kind == Token.EQ) {
                 match(Token.EQ);
@@ -575,11 +469,11 @@ public class Recogniser {
     }
 
     void parsePrimaryExpr() throws SyntaxError {
-        System.out.println("Parsing primary expression: " + currentToken.spelling);
+        log("Parsing primary expression: " + currentToken.spelling);
         switch (currentToken.kind) {
 
             case Token.ID:
-                System.out.println("Primary expr is an ident");
+                log("Primary expr is an ident");
                 parseIdent();
                 if (currentToken.kind == Token.LPAREN) {
                     parseArgList();
@@ -589,7 +483,7 @@ public class Recogniser {
                     parseExpr();
                     match(Token.RBRACKET);
                 }
-                System.out.println("Exiting parsePrimaryExpr w Identifier first");
+                log("Exiting parsePrimaryExpr w Identifier first");
                 break;
 
             case Token.LPAREN:
@@ -666,7 +560,7 @@ public class Recogniser {
 
 //================== PARAMETERS ========================
     void parseParaList() throws SyntaxError {
-        System.out.println("Parsing parameter list");
+        log("Parsing parameter list");
         match(Token.LPAREN);
         if (nextTokenIsType()) {
             parseProperParaList();
@@ -688,7 +582,7 @@ public class Recogniser {
     }
 
     void parseArgList() throws SyntaxError {
-        System.out.println("Parsing arglist");
+        log("Parsing arglist");
         match(Token.LPAREN);
         if (nextTokenStartsExpr()) {
             parseProperArgList();
@@ -697,9 +591,9 @@ public class Recogniser {
     }
 
     void parseProperArgList() throws SyntaxError {
-        System.out.println("Parsing proper arglist with token: " + currentToken.spelling);
+        log("Parsing proper arglist with token: " + currentToken.spelling);
         parseArg();
-        System.out.println("Arg parsed");
+        log("Arg parsed");
         while (currentToken.kind != Token.RPAREN) {
             match(Token.COMMA);
             parseArg();
@@ -707,7 +601,7 @@ public class Recogniser {
     }
 
     void parseArg() throws SyntaxError {
-        System.out.println("Parsing argument: " + currentToken.spelling);
+        log("Parsing argument: " + currentToken.spelling);
         parseExpr();
     }
 
