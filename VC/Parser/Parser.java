@@ -203,41 +203,90 @@ public class Parser {
     }
     //do varDecl
     else {
-      // TODO:
       log("Parsing variable declaration");
+      Expr exprAST = parseVarDeclExpr(iAST);
+      // TODO: determine global v local
+      fvlAST = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
+
     }
     return fvlAST;
   }
 
-  Expr parseVarDeclExpr() throws SyntaxError {
-    Expr eAST = null;
 
-    IntLiteral intLiteral = null;
+  Expr parseVarDeclExpr(Ident iAST) throws SyntaxError{
+    Expr exprAST = null;
+    Expr expr2AST = null;
 
     SourcePosition declPos = new SourcePosition();
     start(declPos);
+    Var vAST = new SimpleVar(iAST, declPos);
 
+    //Start with exprAST -> a
+    exprAST = new VarExpr(vAST, declPos);
+
+    //exprAST -> a[] || a[INT]
     if (currentToken.kind == Token.LBRACKET) {
       match(Token.LBRACKET);
-      if (currentToken.kind != Token.RBRACKET) {
-        intLiteral = parseIntLiteral();
+      //if array initialiser: exprAST -> a[INT]
+      if (currentToken.kind == Token.INTLITERAL) {
+        IntLiteral index = parseIntLiteral();
+        Expr indexExpr = new IntExpr(index, declPos);
+        finish(declPos);
+        exprAST = new ArrayExpr(vAST, indexExpr, declPos);
+      }
+      //otherwise: exprAST -> a[]
+      else {
+        finish(declPos);
+        exprAST = new ArrayExpr(vAST, new EmptyExpr(declPos), declPos);
       }
       match(Token.RBRACKET);
     }
 
+    //exprAST -> exprAST = expr2AST
     if (currentToken.kind == Token.EQ) {
-      match(Token.EQ);
-      List initList = parseInitialiser();
+      acceptOperator();
+      if (currentToken.kind == Token.LCURLY) {
+        match(Token.LCURLY);
+        List initList = parseInitialiserList();
+        expr2AST = new ArrayInitExpr(initList, declPos);
+
+        match(Token.RCURLY);
+      }
+      else {
+        expr2AST = parseSingleInitialiser();
+      }
       finish(declPos);
-      eAST = new ArrayInitExpr(initList,declPos);
+      exprAST = new AssignExpr(exprAST, expr2AST, declPos);
     }
 
-
-
-    return eAST;
+    return exprAST;
   }
 
-  List parseInitialiser() throws SyntaxError {
+  /*if (currentToken.kind == Token.COMMA) {
+    while (currentToken.kind != Token.SEMICOLON) {
+      match(Token.COMMA);
+      Ident id = parseIdent();
+      if (currentToken.kind == Token.LBRACKET) {
+        match(Token.LBRACKET);
+        if (currentToken.kind == Token.INTLITERAL) {
+          intLiteralExpr = new IntExpr(parseIntLiteral(), declPos);
+        }
+        match(Token.RBRACKET);
+      }
+      if (currentToken.kind == Token.EQ) {
+        match(Token.EQ);
+        List initList = parseInitialiser();
+      }
+      else if (currentToken.k)
+    }
+  }*/
+
+  Expr parseSingleInitialiser() throws SyntaxError {
+    log("Parsing initialiser");
+    Expr initAST = parseExpr();
+    return initAST;
+  }
+  List parseInitialiserList() throws SyntaxError {
     log("Parsing initialiser");
     SourcePosition initPos = new SourcePosition();
     start(initPos);
@@ -245,24 +294,16 @@ public class Parser {
     List aelAST = new EmptyArrayExprList(initPos);
     Expr aiAST = null;
 
-
-    if (currentToken.kind == Token.LCURLY) {
-      match(Token.LCURLY);
-      aiAST = parseExpr();
-      aelAST = new ArrayExprList(aiAST, aelAST, initPos);
-      if (currentToken.kind == Token.COMMA) {
-        while (currentToken.kind != Token.RCURLY) {
-          match(Token.COMMA);
-          aiAST = parseExpr();
-          finish(initPos);
-          aelAST = new ArrayExprList(aiAST, aelAST, initPos);
-        }
+    match(Token.LCURLY);
+    aiAST = parseExpr();
+    aelAST = new ArrayExprList(aiAST, aelAST, initPos);
+    if (currentToken.kind == Token.COMMA) {
+      while (currentToken.kind != Token.RCURLY) {
+        match(Token.COMMA);
+        aiAST = parseExpr();
+        finish(initPos);
+        aelAST = new ArrayExprList(aiAST, aelAST, initPos);
       }
-      match(Token.RCURLY);
-    } else {
-      aiAST = parseExpr();
-      finish(initPos);
-      aelAST = new ArrayExprList(aiAST, aelAST, initPos);
     }
 
     return aelAST;
