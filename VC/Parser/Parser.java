@@ -131,7 +131,7 @@ public class Parser {
 
 // ========================== PROGRAMS ========================
 
-  public Program parseProgram() {
+  public Program parseProgram1() {
     log("In parseProgram");
     Program programAST = null;
     
@@ -150,10 +150,16 @@ public class Parser {
     return programAST;
   }
 
-  public Program parseProgram2() {
+  public Program parseProgram() {
     Program programAST = null;
     SourcePosition programPos = new SourcePosition();
     start(programPos);
+
+    if (currentToken.kind == Token.EOF) {
+      finish(programPos);
+      List emptyList = new EmptyDeclList(programPos);
+      programAST = new Program(emptyList, programPos);
+    }
     try {
         while (currentToken.kind != Token.EOF) {
             parseFuncOrVarDecl();
@@ -561,6 +567,7 @@ public class Parser {
   }
 
   Stmt parseExprStmt() throws SyntaxError {
+    log("In parseExprStmt");
     Stmt sAST = null;
 
     SourcePosition stmtPos = new SourcePosition();
@@ -669,6 +676,7 @@ public class Parser {
 
 
   Expr parseExpr() throws SyntaxError {
+    log("In parseExpr");
     Expr exprAST = null;
     exprAST = parseAssignmentExpr();
     return exprAST;
@@ -863,7 +871,7 @@ public class Parser {
   }
 
   Expr parsePrimaryExpr() throws SyntaxError {
-
+    log("In parsePrimaryExpr");
     Expr exprAST = null;
 
     SourcePosition primPos = new SourcePosition();
