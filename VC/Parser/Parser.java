@@ -159,38 +159,54 @@ public class Parser {
       finish(programPos);
       List emptyList = new EmptyDeclList(programPos);
       programAST = new Program(emptyList, programPos);
+      return programAST;
     }
     try {
+        Decl funcVarDecl = parseFuncOrVarDecl();
+        List declList = new DeclList(funcVarDecl, new EmptyDeclList(programPos), programPos);
         while (currentToken.kind != Token.EOF) {
-            parseFuncOrVarDecl();
+           funcVarDecl = parseFuncOrVarDecl();
+           declList = new DeclList(funcVarDecl, declList, programPos);
         }
-      if (currentToken.kind != Token.EOF) {
-        syntacticError("\"%\" unknown type", currentToken.spelling);
-      }
+        finish(programPos);
+        programAST = new Program(declList, programPos);
+
+//      if (currentToken.kind != Token.EOF) {
+//        syntacticError("\"%\" unknown type", currentToken.spelling);
+//      }
     } catch (SyntaxError s) {return null;}
     return programAST;
   }
 
 // ========================== DECLARATIONS ========================
   Decl parseFuncOrVarDecl() throws SyntaxError {
-    Decl fvAST = null;
+    log("In parseFuncOrVarDecl");
     SourcePosition fvPos = new SourcePosition();
     start(fvPos);
+    Decl fvlAST = null;
+
+
 
     Type tAST = parseType();
     Ident iAST = parseIdent();
 
     if (currentToken.kind == Token.LPAREN) {
-      List plAST = parseParaList();
+      List plAST = new EmptyParaList(fvPos);
+      accept();
+      if (currentToken.kind != Token.RPAREN) {
+        plAST = parseParaList();
+      }
+      match(Token.RPAREN);
       Stmt cAST = parseCompoundStmt();
       finish(fvPos);
-      fvAST = new FuncDecl(tAST, iAST, plAST, cAST, fvPos);
+      fvlAST= new FuncDecl(tAST, iAST, plAST, cAST, fvPos);
     }
     //do varDecl
     else {
-
+      // TODO:
+      log("Parsing variable declaration");
     }
-    return fvAST;
+    return fvlAST;
   }
 
   Expr parseVarDeclExpr() throws SyntaxError {
@@ -357,26 +373,33 @@ public class Parser {
 // ======================= STATEMENTS ==============================
 
   Stmt parseCompoundStmt() throws SyntaxError {
-    log("In parseCompundStmt");
-    Stmt cAST = null; 
+    log("In parseCompoundStmt");
+    Stmt cAST = null;
 
     SourcePosition stmtPos = new SourcePosition();
     start(stmtPos);
+    List varDeclAST = new EmptyDeclList(stmtPos);
+    List stmtListAST = new EmptyStmtList(stmtPos);
+
 
     match(Token.LCURLY);
+    while(currentToken.kind != Token.RCURLY) {
+      while (nextTokenIsType()) {
+        log("Calling funcOrVarDecl from compoundstmt");
+        Decl varDecl = parseFuncOrVarDecl();
+        varDeclAST = new DeclList(varDecl, varDeclAST, stmtPos);
+      }
+      stmtListAST = parseStmtList();
+    }
 
-    // Insert code here to build a DeclList node for variable declarations
-    List slAST = parseStmtList();
     match(Token.RCURLY);
     finish(stmtPos);
 
-    /* In the subset of the VC grammar, no variable declarations are
-     * allowed. Therefore, a block is empty iff it has no statements.
-     */
-    if (slAST instanceof EmptyStmtList) 
+    if (stmtListAST instanceof EmptyStmtList && varDeclAST instanceof EmptyDeclList)
       cAST = new EmptyCompStmt(stmtPos);
     else
-      cAST = new CompoundStmt(new EmptyDeclList(dummyPos), slAST, stmtPos);
+      cAST = new CompoundStmt(varDeclAST, stmtListAST, stmtPos);
+
     return cAST;
   }
 
