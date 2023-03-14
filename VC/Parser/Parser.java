@@ -283,17 +283,25 @@ public class Parser {
 
   Decl parseFuncDecl() throws SyntaxError {
     log("In parseFuncDecl");
-    Decl fAST = null; 
-    
+    Decl fAST = null;
+
     SourcePosition funcPos = new SourcePosition();
     start(funcPos);
+    List fplAST = new EmptyParaList(funcPos);
 
     Type tAST = parseType();
     Ident iAST = parseIdent();
-    List fplAST = parseParaList();
+    match(Token.LPAREN);
+    if (currentToken.kind != Token.RPAREN) {
+      fplAST = parseParaList();
+    }
+    match(Token.RPAREN);
+
+
     Stmt cAST = parseCompoundStmt();
     finish(funcPos);
     fAST = new FuncDecl(tAST, iAST, fplAST, cAST, funcPos);
+    log("Leaving parseFuncDecl");
     return fAST;
   }
 
@@ -594,11 +602,11 @@ public class Parser {
 
   //POSITION INFO MIGHT BE FUNKY
   List parseParaList() throws SyntaxError {
+    log("In parseParaList");
     SourcePosition formalsStartPos = new SourcePosition();
     start(formalsStartPos);
     List formalsAST = new EmptyParaList(formalsStartPos);
 
-    match(Token.LPAREN);
     ParaDecl paraDec = parseParaDecl();
     finish(formalsStartPos);
     formalsAST = new ParaList(paraDec, formalsAST, formalsStartPos);
@@ -610,13 +618,14 @@ public class Parser {
       finish(formalsPos);
       formalsAST = new ParaList(paraDec, formalsAST, formalsPos);
     }
-    match(Token.RPAREN);
 
     return formalsAST;
   }
 
 
+  //CHANGE TO INCLUDE INTLITERAL
   ParaDecl parseParaDecl() throws SyntaxError {
+    log("In parseParaDecl");
     ParaDecl pAST = null;
     SourcePosition paradeclPos = new SourcePosition();
     start(paradeclPos);
@@ -925,7 +934,7 @@ public class Parser {
 // ========================== ID, OPERATOR and LITERALS ========================
 
   Ident parseIdent() throws SyntaxError {
-
+    log("In parseIdent");
     Ident I = null; 
 
     if (currentToken.kind == Token.ID) {
