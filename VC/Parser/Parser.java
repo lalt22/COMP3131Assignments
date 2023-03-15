@@ -162,11 +162,9 @@ public class Parser {
       return programAST;
     }
     try {
-        Decl funcVarDecl = parseFuncOrVarDecl();
-        List declList = new DeclList(funcVarDecl, new EmptyDeclList(programPos), programPos);
+        List declList = parseFuncOrVarDeclList(new EmptyDeclList(programPos));
         while (currentToken.kind != Token.EOF) {
-           funcVarDecl = parseFuncOrVarDecl();
-           declList = new DeclList(funcVarDecl, declList, programPos);
+           declList = parseFuncOrVarDeclList(declList);
         }
         finish(programPos);
         programAST = new Program(declList, programPos);
@@ -179,12 +177,13 @@ public class Parser {
   }
 
 // ========================== DECLARATIONS ========================
-  Decl parseFuncOrVarDecl() throws SyntaxError {
+  List parseFuncOrVarDeclList(List declList) throws SyntaxError {
     log("In parseFuncOrVarDecl");
     SourcePosition fvPos = new SourcePosition();
     start(fvPos);
     Decl fvlAST = null;
 
+//    List declList = new EmptyDeclList(fvPos);
 
 
     Type tAST = parseType();
@@ -200,6 +199,7 @@ public class Parser {
       Stmt cAST = parseCompoundStmt();
       finish(fvPos);
       fvlAST= new FuncDecl(tAST, iAST, plAST, cAST, fvPos);
+      declList = new DeclList(fvlAST, declList, fvPos);
     }
     //do varDecl
     else {
@@ -207,12 +207,27 @@ public class Parser {
       Expr exprAST = parseVarDeclExpr(iAST);
       // TODO: determine global v local
       fvlAST = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
-
+      declList = new DeclList(fvlAST, declList, fvPos);
+      // While not a semicolon
+      while(currentToken.kind != Token.SEMICOLON) {
+        log("Not at the end of the line");
+        if(currentToken.kind == Token.COMMA) {
+          log("Parsing multiple decls inline");
+          accept();
+          iAST = parseIdent();
+          exprAST = parseVarDeclExpr(iAST);
+          fvlAST = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
+          declList = new DeclList(fvlAST, declList, fvPos);
+        }
+      }
+      match(Token.SEMICOLON);
     }
-    return fvlAST;
+    return declList;
   }
 
-
+  /**
+   * Parses a single variable declaration.
+   */
   Expr parseVarDeclExpr(Ident iAST) throws SyntaxError{
     Expr exprAST = null;
     Expr expr2AST = null;
@@ -221,8 +236,8 @@ public class Parser {
     start(declPos);
     Var vAST = new SimpleVar(iAST, declPos);
 
-    //Start with exprAST -> a
-    exprAST = new VarExpr(vAST, declPos);
+    //Start with exprAST -> _
+    exprAST = new EmptyExpr(declPos);
 
     //exprAST -> a[] || a[INT]
     if (currentToken.kind == Token.LBRACKET) {
@@ -427,8 +442,9 @@ public class Parser {
     while(currentToken.kind != Token.RCURLY) {
       while (nextTokenIsType()) {
         log("Calling funcOrVarDecl from compoundstmt");
-        Decl varDecl = parseFuncOrVarDecl();
-        varDeclAST = new DeclList(varDecl, varDeclAST, stmtPos);
+//        Decl varDecl = parseFuncOrVarDecl();
+//        varDeclAST = new DeclList(varDecl, varDeclAST, stmtPos);
+        varDeclAST = parseFuncOrVarDeclList(varDeclAST);
       }
       stmtListAST = parseStmtList();
     }

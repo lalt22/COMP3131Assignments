@@ -1,0 +1,19 @@
+Program
+  DeclList
+    LocalVarDecl
+      boolean
+      b
+    DeclList
+      LocalVarDecl
+        float
+        f
+        =
+        AssignExpr
+          EmptyExpr
+          FloatExpr
+            1.0
+      DeclList
+        LocalVarDecl
+          int
+          i
+        EmptyDeclList
