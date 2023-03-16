@@ -1,0 +1,6 @@
+void f()
+{
+}
+int c = 1;
+int a = {2,1};
+int i = 1;

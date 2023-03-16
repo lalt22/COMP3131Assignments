@@ -8,10 +8,8 @@ Program
         float
         f
         =
-        AssignExpr
-          EmptyExpr
-          FloatExpr
-            1.0
+        FloatExpr
+          1.0
       DeclList
         LocalVarDecl
           int

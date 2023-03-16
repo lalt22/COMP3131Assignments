@@ -1,0 +1,14 @@
+Program
+  DeclList
+    LocalVarDecl
+      int
+      kkk
+    DeclList
+      LocalVarDecl
+        int
+        jj
+      DeclList
+        LocalVarDecl
+          int
+          i
+        EmptyDeclList

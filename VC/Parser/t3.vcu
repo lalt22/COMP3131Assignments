@@ -1,3 +1,3 @@
 boolean b;
-float f = (=1.0);
+float f = 1.0;
 int i;

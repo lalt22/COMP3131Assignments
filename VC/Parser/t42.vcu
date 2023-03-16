@@ -1,0 +1,13 @@
+void f()
+{
+  int y;
+  int x;
+}
+float g;
+float f;
+void f()
+{
+}
+int k;
+int j;
+int i;

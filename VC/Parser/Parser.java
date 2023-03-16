@@ -75,13 +75,12 @@ public class Parser {
     currentToken = scanner.getToken();
   }
 
-  boolean showLog = true;
+  boolean showLog = false;
   void log(Object o) {
     if (showLog) {
       System.out.println(o);
     }
   }
-
 // match checks to see f the current token matches tokenExpected.
 // If so, fetches the next token.
 // If not, reports a syntactic error.
@@ -130,26 +129,6 @@ public class Parser {
   }
 
 // ========================== PROGRAMS ========================
-
-  public Program parseProgram1() {
-    log("In parseProgram");
-    Program programAST = null;
-    
-    SourcePosition programPos = new SourcePosition();
-    start(programPos);
-
-    try {
-      List dlAST = parseFuncDeclList();
-      finish(programPos);
-      programAST = new Program(dlAST, programPos); 
-      if (currentToken.kind != Token.EOF) {
-        syntacticError("\"%\" unknown type", currentToken.spelling);
-      }
-    }
-    catch (SyntaxError s) { return null; }
-    return programAST;
-  }
-
   public Program parseProgram() {
     Program programAST = null;
     SourcePosition programPos = new SourcePosition();
@@ -183,9 +162,6 @@ public class Parser {
     start(fvPos);
     Decl fvlAST = null;
 
-//    List declList = new EmptyDeclList(fvPos);
-
-
     Type tAST = parseType();
     Ident iAST = parseIdent();
 
@@ -204,8 +180,27 @@ public class Parser {
     //do varDecl
     else {
       log("Parsing variable declaration");
+
+
+
+      //if array type: change tAST from Type to ArrayType(Type, Expr)
+      if (currentToken.kind == Token.LBRACKET) {
+        Expr indexExpr = new EmptyExpr(fvPos);
+        match(Token.LBRACKET);
+        //if array initialiser: exprAST -> a[INT]
+        if (currentToken.kind == Token.INTLITERAL) {
+          IntLiteral index = parseIntLiteral();
+          indexExpr = new IntExpr(index, fvPos);
+//          exprAST = new ArrayExpr(vAST, indexExpr, declPos);
+        }
+        //otherwise: exprAST -> a[]
+        tAST = new ArrayType(tAST, indexExpr, fvPos);
+        match(Token.RBRACKET);
+      }
+
       Expr exprAST = parseVarDeclExpr(iAST);
       // TODO: determine global v local
+      // TODO: if parsing an array, must change tAST -> arrayType
       fvlAST = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
       declList = new DeclList(fvlAST, declList, fvPos);
       // While not a semicolon
@@ -227,17 +222,18 @@ public class Parser {
 
   /**
    * Parses a single variable declaration.
+   * Takes an identifier
+   *
    */
   Expr parseVarDeclExpr(Ident iAST) throws SyntaxError{
-    Expr exprAST = null;
-    Expr expr2AST = null;
-
+    log("In parseVarDeclExpr");
     SourcePosition declPos = new SourcePosition();
     start(declPos);
     Var vAST = new SimpleVar(iAST, declPos);
 
     //Start with exprAST -> _
-    exprAST = new EmptyExpr(declPos);
+    Expr exprAST = new EmptyExpr(declPos);
+    Expr expr2AST = new EmptyExpr(declPos);
 
     //exprAST -> a[] || a[INT]
     if (currentToken.kind == Token.LBRACKET) {
@@ -251,6 +247,7 @@ public class Parser {
       }
       //otherwise: exprAST -> a[]
       else {
+        log("Parsing array w/out INTLITERAL");
         finish(declPos);
         exprAST = new ArrayExpr(vAST, new EmptyExpr(declPos), declPos);
       }
@@ -261,6 +258,7 @@ public class Parser {
     if (currentToken.kind == Token.EQ) {
       acceptOperator();
       if (currentToken.kind == Token.LCURLY) {
+        log("Current token: " + currentToken.spelling);
         match(Token.LCURLY);
         List initList = parseInitialiserList();
         expr2AST = new ArrayInitExpr(initList, declPos);
@@ -271,30 +269,12 @@ public class Parser {
         expr2AST = parseSingleInitialiser();
       }
       finish(declPos);
-      exprAST = new AssignExpr(exprAST, expr2AST, declPos);
+//      exprAST = new AssignExpr(exprAST, expr2AST, declPos);
     }
 
-    return exprAST;
+    return expr2AST;
   }
 
-  /*if (currentToken.kind == Token.COMMA) {
-    while (currentToken.kind != Token.SEMICOLON) {
-      match(Token.COMMA);
-      Ident id = parseIdent();
-      if (currentToken.kind == Token.LBRACKET) {
-        match(Token.LBRACKET);
-        if (currentToken.kind == Token.INTLITERAL) {
-          intLiteralExpr = new IntExpr(parseIntLiteral(), declPos);
-        }
-        match(Token.RBRACKET);
-      }
-      if (currentToken.kind == Token.EQ) {
-        match(Token.EQ);
-        List initList = parseInitialiser();
-      }
-      else if (currentToken.k)
-    }
-  }*/
 
   Expr parseSingleInitialiser() throws SyntaxError {
     log("Parsing initialiser");
@@ -309,7 +289,6 @@ public class Parser {
     List aelAST = new EmptyArrayExprList(initPos);
     Expr aiAST = null;
 
-    match(Token.LCURLY);
     aiAST = parseExpr();
     aelAST = new ArrayExprList(aiAST, aelAST, initPos);
     if (currentToken.kind == Token.COMMA) {
@@ -556,30 +535,27 @@ public class Parser {
     Stmt forAST = null;
     SourcePosition stmtPos = new SourcePosition();
     start(stmtPos);
-    Expr eAST1 = null;
-    Expr eAST2 = null;
-    Expr eAST3 = null;
+    Expr eAST1 = new EmptyExpr(stmtPos);
+    Expr eAST2 = new EmptyExpr(stmtPos);
+    Expr eAST3 = new EmptyExpr(stmtPos);
     match(Token.FOR);
     match(Token.LPAREN);
+
     int forSections = 0;
     while (forSections < 3) {
-      if (currentToken.kind != Token.SEMICOLON) {
-        if (forSections == 0) {
-          eAST1 = parseExpr();
-        }
-        if (forSections == 1) {
-          eAST2 = parseExpr();
-        }
-        if (forSections == 2) {
-          eAST3 = parseExpr();
-        }
-        parseExpr();
-        forSections++;
-        if (forSections == 3) {
-          break;
-        }
+      log("Parsing for statement section: " + forSections);
+      if (forSections == 0) {
+        eAST1 = parseForExpr();
+        match(Token.SEMICOLON);
       }
-      match(Token.SEMICOLON);
+      if (forSections == 1) {
+        eAST2 = parseForExpr();
+        match(Token.SEMICOLON);
+      }
+      if (forSections == 2) {
+        eAST3 = parseForExpr();
+      }
+      forSections++;
     }
     match(Token.RPAREN);
     Stmt sAST = parseStmt();
@@ -587,6 +563,26 @@ public class Parser {
     forAST = new ForStmt(eAST1, eAST2, eAST3, sAST, stmtPos);
 
     return forAST;
+  }
+
+  Expr parseForExpr() throws SyntaxError {
+    SourcePosition exprPos = new SourcePosition();
+    start(exprPos);
+    Expr finalExprAST = new EmptyExpr(exprPos);
+
+    log("Current token: " + currentToken.spelling);
+    if (currentToken.kind != Token.SEMICOLON
+            && currentToken.kind != Token.RPAREN) {
+      finalExprAST = parseAssignmentExpr();
+      if (finalExprAST == null) {
+        finalExprAST = parseRelExpr();
+        if (finalExprAST == null) {
+          finalExprAST = new EmptyExpr(exprPos);
+        }
+      }
+    }
+
+    return finalExprAST;
   }
 
   Stmt parseWhileStmt() throws SyntaxError {
@@ -718,6 +714,19 @@ public class Parser {
     start(paradeclPos);
     Type tAST = parseType();
     Ident iAST = parseIdent();
+    if (currentToken.kind == Token.LBRACKET) {
+      Expr indexExpr = new EmptyExpr(paradeclPos);
+      match(Token.LBRACKET);
+      //if array initialiser: exprAST -> a[INT]
+      if (currentToken.kind == Token.INTLITERAL) {
+        IntLiteral index = parseIntLiteral();
+        indexExpr = new IntExpr(index, paradeclPos);
+//          exprAST = new ArrayExpr(vAST, indexExpr, declPos);
+      }
+      //otherwise: exprAST -> a[]
+      tAST = new ArrayType(tAST, indexExpr, paradeclPos);
+      match(Token.RBRACKET);
+    }
     finish(paradeclPos);
     pAST = new ParaDecl(tAST, iAST, paradeclPos);
     return pAST;
@@ -729,6 +738,9 @@ public class Parser {
 
     List arglAST = new EmptyArgList(arglPos);
     match(Token.LPAREN);
+    if (currentToken.kind == Token.RPAREN) {
+      return new EmptyArgList(arglPos);
+    }
     Arg argAST = parseArg();
     arglAST = new ArgList(argAST, arglAST, arglPos);
     while (currentToken.kind == Token.COMMA) {
@@ -956,22 +968,28 @@ public class Parser {
 
     SourcePosition primPos = new SourcePosition();
     start(primPos);
-
+    log("Current token: " + currentToken.spelling);
     switch (currentToken.kind) {
 
       case Token.ID:
         Ident iAST = parseIdent();
+
         if (currentToken.kind == Token.LPAREN) {
+          log("Parsing callExpr");
           List argList = parseArgList();
           finish(primPos);
           exprAST = new CallExpr(iAST, argList, primPos);
+          match(Token.RPAREN);
+          log("Parsed callExpr");
         }
         else if (currentToken.kind == Token.LBRACKET){
+          log("Parsing arrayExpr");
           match(Token.LBRACKET);
           Expr expr2AST = parseExpr();
           finish(primPos);
           Var vAST = new SimpleVar(iAST, primPos);
           exprAST = new ArrayExpr(vAST, expr2AST, primPos);
+          match(Token.RBRACKET);
         }
         else {
           finish(primPos);

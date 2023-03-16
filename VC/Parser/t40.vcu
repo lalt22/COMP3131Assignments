@@ -1,0 +1,11 @@
+void main()
+{
+  int j;
+  int i;
+  (i=getInt());
+  (j=getInt());
+  if ((i>=j))
+    putintln(i);
+  else
+    putintln(j);
+}

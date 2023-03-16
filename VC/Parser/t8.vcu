@@ -1,0 +1,6 @@
+void main()
+{
+  boolean b = true;
+  float f;
+  int i;
+}

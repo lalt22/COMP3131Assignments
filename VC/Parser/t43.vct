@@ -1,0 +1,25 @@
+Program
+  DeclList
+    LocalVarDecl
+      ArrType
+        int
+        IntExpr
+          10
+      b
+      =
+      ArrInitExpr
+        ArrExprList
+          IntExpr
+            2
+          ArrExprList
+            IntExpr
+              1
+            EmptyArrExprList
+    DeclList
+      LocalVarDecl
+        ArrType
+          int
+          IntExpr
+            10
+        a
+      EmptyDeclList
