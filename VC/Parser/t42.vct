@@ -1,44 +1,46 @@
 Program
   DeclList
-    FuncDecl
-      void
-      f
-      EmptyParaList
-      CompoundStmt
-        DeclList
-          LocalVarDecl
-            int
-            y
-          DeclList
-            LocalVarDecl
-              int
-              x
-            EmptyDeclList
-        EmptyStmtList
+    LocalVarDecl
+      int
+      i
     DeclList
       LocalVarDecl
-        float
-        g
+        int
+        j
       DeclList
         LocalVarDecl
-          float
-          f
+          int
+          k
         DeclList
           FuncDecl
             void
             f
             EmptyParaList
-            EmptyCompStmt
+            CompoundStmt
+              EmptyDeclList
+              EmptyStmtList
           DeclList
             LocalVarDecl
-              int
-              k
+              float
+              f
             DeclList
               LocalVarDecl
-                int
-                j
+                float
+                g
               DeclList
-                LocalVarDecl
-                  int
-                  i
+                FuncDecl
+                  void
+                  f
+                  EmptyParaList
+                  CompoundStmt
+                    DeclList
+                      LocalVarDecl
+                        int
+                        x
+                      DeclList
+                        LocalVarDecl
+                          int
+                          y
+                        EmptyDeclList
+                    EmptyStmtList
                 EmptyDeclList

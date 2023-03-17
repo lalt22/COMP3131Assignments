@@ -5,21 +5,23 @@ Program
         int
         IntExpr
           10
-      b
-      =
-      ArrInitExpr
-        ArrExprList
-          IntExpr
-            2
-          ArrExprList
-            IntExpr
-              1
-            EmptyArrExprList
+      a
     DeclList
       LocalVarDecl
         ArrType
-          int
-          IntExpr
-            10
-        a
+          ArrType
+            int
+            IntExpr
+              10
+          EmptyExpr
+        b
+        =
+        ArrInitExpr
+          ArrExprList
+            IntExpr
+              1
+            ArrExprList
+              IntExpr
+                2
+              EmptyArrExprList
       EmptyDeclList

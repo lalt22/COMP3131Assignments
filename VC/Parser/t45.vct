@@ -6,16 +6,18 @@ Program
       ParaList
         ParaDecl
           ArrType
-            float
-            IntExpr
-              10
-          f
+            int
+            EmptyExpr
+          a
         ParaList
           ParaDecl
             ArrType
-              int
-              EmptyExpr
-            a
+              float
+              IntExpr
+                10
+            f
           EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

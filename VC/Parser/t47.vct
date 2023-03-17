@@ -1,35 +1,45 @@
 Program
   DeclList
-    FuncDecl
-      void
-      f
-      EmptyParaList
-      EmptyCompStmt
+    LocalVarDecl
+      int
+      i
+      =
+      IntExpr
+        1
     DeclList
       LocalVarDecl
-        int
-        c
-        =
-        IntExpr
-          1
-      DeclList
-        LocalVarDecl
+        ArrType
           int
-          a
-          =
-          ArrInitExpr
+          IntExpr
+            10
+        a
+        =
+        ArrInitExpr
+          ArrExprList
+            IntExpr
+              1
             ArrExprList
               IntExpr
                 2
-              ArrExprList
-                IntExpr
-                  1
-                EmptyArrExprList
+              EmptyArrExprList
+      DeclList
+        LocalVarDecl
+          ArrType
+            ArrType
+              int
+              IntExpr
+                10
+            EmptyExpr
+          c
+          =
+          IntExpr
+            1
         DeclList
-          LocalVarDecl
-            int
-            i
-            =
-            IntExpr
-              1
+          FuncDecl
+            void
+            f
+            EmptyParaList
+            CompoundStmt
+              EmptyDeclList
+              EmptyStmtList
           EmptyDeclList

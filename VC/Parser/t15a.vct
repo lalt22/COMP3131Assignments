@@ -16,12 +16,17 @@ Program
                     1
                 ArgList
                   Arg
-                    FloatExpr
-                      2.0
+                    BinaryExpr
+                      VarExpr
+                        SimpleVar
+                          a
+                      +
+                      IntExpr
+                        1
                   ArgList
                     Arg
                       BooleanExpr
-                        false
+                        true
                     EmptyArgList
           EmptyStmtList
     EmptyDeclList

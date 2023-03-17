@@ -28,11 +28,11 @@ Program
                 ArgList
                   Arg
                     IntExpr
-                      2
+                      1
                   ArgList
                     Arg
                       IntExpr
-                        1
+                        2
                     EmptyArgList
           EmptyStmtList
     EmptyDeclList

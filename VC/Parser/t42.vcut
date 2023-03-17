@@ -16,7 +16,9 @@ Program
             void
             f
             EmptyParaList
-            EmptyCompStmt
+            CompoundStmt
+              EmptyDeclList
+              EmptyStmtList
           DeclList
             LocalVarDecl
               float

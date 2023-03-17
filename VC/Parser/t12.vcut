@@ -4,5 +4,7 @@ Program
       void
       f
       EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

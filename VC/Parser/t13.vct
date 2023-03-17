@@ -5,16 +5,18 @@ Program
       f
       ParaList
         ParaDecl
-          boolean
-          b
+          int
+          i
         ParaList
           ParaDecl
             float
             f
           ParaList
             ParaDecl
-              int
-              i
+              boolean
+              b
             EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

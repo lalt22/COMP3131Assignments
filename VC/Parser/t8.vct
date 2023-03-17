@@ -7,19 +7,19 @@ Program
       CompoundStmt
         DeclList
           LocalVarDecl
-            boolean
-            b
-            =
-            BooleanExpr
-              true
+            int
+            i
           DeclList
             LocalVarDecl
               float
               f
             DeclList
               LocalVarDecl
-                int
-                i
+                boolean
+                b
+                =
+                BooleanExpr
+                  true
               EmptyDeclList
         EmptyStmtList
     EmptyDeclList

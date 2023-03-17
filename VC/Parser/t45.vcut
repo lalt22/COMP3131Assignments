@@ -17,5 +17,7 @@ Program
                 10
             f
           EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

@@ -4,5 +4,7 @@ Program
       void
       main
       EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

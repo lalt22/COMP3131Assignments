@@ -1,9 +1,9 @@
-float h()
+void f()
 {
 }
 int g()
 {
 }
-void f()
+float h()
 {
 }

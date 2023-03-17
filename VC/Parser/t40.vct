@@ -8,11 +8,11 @@ Program
         DeclList
           LocalVarDecl
             int
-            j
+            i
           DeclList
             LocalVarDecl
               int
-              i
+              j
             EmptyDeclList
         StmtList
           ExprStmt

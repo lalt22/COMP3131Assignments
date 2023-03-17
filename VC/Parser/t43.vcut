@@ -10,8 +10,7 @@ Program
       LocalVarDecl
         ArrType
           int
-          IntExpr
-            10
+          EmptyExpr
         b
         =
         ArrInitExpr

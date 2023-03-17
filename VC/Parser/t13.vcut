@@ -16,5 +16,7 @@ Program
               boolean
               b
             EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     EmptyDeclList

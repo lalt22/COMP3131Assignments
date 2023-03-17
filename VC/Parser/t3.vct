@@ -1,8 +1,8 @@
 Program
   DeclList
     LocalVarDecl
-      boolean
-      b
+      int
+      i
     DeclList
       LocalVarDecl
         float
@@ -12,6 +12,6 @@ Program
           1.0
       DeclList
         LocalVarDecl
-          int
-          i
+          boolean
+          b
         EmptyDeclList

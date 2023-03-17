@@ -4,17 +4,23 @@ Program
       void
       f
       EmptyParaList
-      EmptyCompStmt
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
     DeclList
       FuncDecl
         int
         g
         EmptyParaList
-        EmptyCompStmt
+        CompoundStmt
+          EmptyDeclList
+          EmptyStmtList
       DeclList
         FuncDecl
           float
           h
           EmptyParaList
-          EmptyCompStmt
+          CompoundStmt
+            EmptyDeclList
+            EmptyStmtList
         EmptyDeclList

@@ -1,13 +1,13 @@
-void f()
-{
-  int y;
-  int x;
-}
-float g;
-float f;
-void f()
-{
-}
-int k;
-int j;
 int i;
+int j;
+int k;
+void f()
+{
+}
+float f;
+float g;
+void f()
+{
+  int x;
+  int y;
+}

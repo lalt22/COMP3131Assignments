@@ -1,6 +1,6 @@
 void main()
 {
-  int kkk;
-  int jj;
   int i;
+  int jj;
+  int kkk;
 }
