@@ -1,14 +1,14 @@
 Program
   DeclList
-    LocalVarDecl
+    GloablVarDecl
       int
       i
     DeclList
-      LocalVarDecl
+      GloablVarDecl
         int
         j
       DeclList
-        LocalVarDecl
+        GloablVarDecl
           int
           k
         DeclList
@@ -20,11 +20,11 @@ Program
               EmptyDeclList
               EmptyStmtList
           DeclList
-            LocalVarDecl
+            GloablVarDecl
               float
               f
             DeclList
-              LocalVarDecl
+              GloablVarDecl
                 float
                 g
               DeclList

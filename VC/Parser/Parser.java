@@ -2,52 +2,6 @@
  +--------------+
  + Parser.java  +
  +--------------+
- *
- * PLEASE COMPARE Recogniser.java PROVIDED IN ASSIGNMENT 2 AND Parser.java
- * PROVIDED BELOW TO UNDERSTAND HOW THE FORMER IS MODIFIED TO OBTAIN THE LATTER.
- *
- * This parser for a subset of the VC language is intended to 
- *  demonstrate how to create the AST nodes, including (among others): 
- *  (1) a list (of statements)
- *  (2) a function
- *  (3) a statement (which is an expression statement), 
- *  (4) a unary expression
- *  (5) a binary expression
- *  (6) terminals (identifiers, integer literals and operators)
- *
- * In addition, it also demonstrates how to use the two methods start 
- * and finish to determine the position information for the start and 
- * end of a construct (known as a phrase) corresponding an AST node.
- *
- * NOTE THAT THE POSITION INFORMATION WILL NOT BE MARKED. HOWEVER, IT CAN BE
- * USEFUL TO DEBUG YOUR IMPLEMENTATION.
- *
- *
- * --- 3/3/2023 --- 
-
-
-program       -> func-decl
-func-decl     -> type identifier "(" ")" compound-stmt
-type          -> void
-identifier    -> ID
-// statements
-compound-stmt -> "{" stmt* "}" 
-stmt          -> expr-stmt
-expr-stmt     -> expr? ";"
-// expressions 
-expr                -> additive-expr
-additive-expr       -> multiplicative-expr
-                    |  additive-expr "+" multiplicative-expr
-                    |  additive-expr "-" multiplicative-expr
-multiplicative-expr -> unary-expr
-	            |  multiplicative-expr "*" unary-expr
-	            |  multiplicative-expr "/" unary-expr
-unary-expr          -> "-" unary-expr
-		    |  primary-expr
-
-primary-expr        -> identifier
- 		    |  INTLITERAL
-		    | "(" expr ")"
  */
 
 package VC.Parser;
@@ -63,6 +17,10 @@ public class Parser {
   private Scanner scanner;
   private ErrorReporter errorReporter;
   private Token currentToken;
+
+  private boolean inFunction = false;
+
+  private boolean inStatement = false;
   private SourcePosition previousTokenPosition;
   private SourcePosition dummyPos = new SourcePosition();
 
@@ -142,15 +100,9 @@ public class Parser {
     }
     try {
         List declList = parseFuncOrVarDeclListRR();
-//        while (currentToken.kind != Token.EOF) {
-//           declList = parseFuncOrVarDeclListRR();
-//        }
+
         finish(programPos);
         programAST = new Program(declList, programPos);
-
-//      if (currentToken.kind != Token.EOF) {
-//        syntacticError("\"%\" unknown type", currentToken.spelling);
-//      }
     } catch (SyntaxError s) {return null;}
     return programAST;
   }
@@ -216,10 +168,8 @@ public class Parser {
       log("Got the expr");
 
       // TODO: determine global v local
-      if (tAST == null) {
-        log("TYPE IS NULL");
-      }
-      fvDec = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
+      fvDec = parseLocalOrGlobalVarDecl(tAST, iAST, exprAST, fvPos);
+//      fvDec = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
     }
 
     //GOT THE DECLARATION. TIME FOR RECURSION
@@ -275,6 +225,13 @@ public class Parser {
 
   log("EXITING RECURSION");
   return fvList;
+  }
+
+  Decl parseLocalOrGlobalVarDecl(Type tAST, Ident iAST, Expr exprAST, SourcePosition fvPos) throws SyntaxError {
+    if (inFunction) {
+      return new LocalVarDecl(tAST, iAST, exprAST, fvPos);
+    }
+    else return new GlobalVarDecl(tAST, iAST, exprAST, fvPos);
   }
 
   /**
@@ -403,6 +360,7 @@ public class Parser {
   Stmt parseCompoundStmt() throws SyntaxError {
     log("In parseCompoundStmt");
     Stmt cAST = null;
+    inFunction = true;
 
     SourcePosition stmtPos = new SourcePosition();
     start(stmtPos);
@@ -430,6 +388,9 @@ public class Parser {
       }
       cAST = new CompoundStmt(varDeclAST, stmtListAST, stmtPos);
     log("EXITING COMPOUND STATEMENT");
+    if (!inStatement) {
+      inFunction = false;
+    }
     return cAST;
   }
 
@@ -463,6 +424,7 @@ public class Parser {
   Stmt parseStmt() throws SyntaxError {
     log("In parseStmt");
     Stmt sAST = null;
+    inStatement = true;
 
     switch (currentToken.kind) {
       case Token.IF:
@@ -497,7 +459,7 @@ public class Parser {
         }
         break;
     }
-
+    inStatement = false;
     return sAST;
   }
 

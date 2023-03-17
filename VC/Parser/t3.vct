@@ -1,17 +1,17 @@
 Program
   DeclList
-    LocalVarDecl
+    GloablVarDecl
       int
       i
     DeclList
-      LocalVarDecl
+      GloablVarDecl
         float
         f
         =
         FloatExpr
           1.0
       DeclList
-        LocalVarDecl
+        GloablVarDecl
           boolean
           b
         EmptyDeclList

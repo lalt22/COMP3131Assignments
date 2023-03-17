@@ -1,6 +1,6 @@
 Program
   DeclList
-    LocalVarDecl
+    GloablVarDecl
       int
       i
     EmptyDeclList
