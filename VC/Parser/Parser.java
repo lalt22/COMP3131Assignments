@@ -33,7 +33,7 @@ public class Parser {
     currentToken = scanner.getToken();
   }
 
-  boolean showLog = false;
+  boolean showLog = true;
   void log(Object o) {
     if (showLog) {
       System.out.println(o);
@@ -154,10 +154,13 @@ public class Parser {
         log("Parsing array type");
         Expr indexExpr = new EmptyExpr(dummyPos);
         match(Token.LBRACKET);
-
+        log("Checking intliteral: " + currentToken.spelling);
         if (currentToken.kind == Token.INTLITERAL) {
           log("Parsing array with INTLITERAL");
           indexExpr = new IntExpr(parseIntLiteral(), fvPos);
+        }
+        if (indexExpr instanceof EmptyExpr) {
+          log("NOT AN INTLITERAL PLS");
         }
         tAST = new ArrayType(tAST, indexExpr, fvPos);
         match(Token.RBRACKET);
@@ -167,9 +170,7 @@ public class Parser {
       Expr exprAST = parseVarDeclExpr(iAST);
       log("Got the expr");
 
-      // TODO: determine global v local
       fvDec = parseLocalOrGlobalVarDecl(tAST, iAST, exprAST, fvPos);
-//      fvDec = new LocalVarDecl(tAST, iAST, exprAST, fvPos);
     }
 
     //GOT THE DECLARATION. TIME FOR RECURSION
@@ -265,7 +266,6 @@ public class Parser {
         match(Token.LCURLY);
         List initList = parseInitialiserList();
         exprAST = new ArrayInitExpr(initList, declPos);
-
         match(Token.RCURLY);
       }
       else {
@@ -273,7 +273,7 @@ public class Parser {
       }
       finish(declPos);
     }
-
+    log("Exiting parseVarDeclExpr. Current token: " + currentToken.spelling);
     return exprAST;
   }
 
@@ -687,7 +687,6 @@ public class Parser {
       if (currentToken.kind == Token.INTLITERAL) {
         IntLiteral index = parseIntLiteral();
         indexExpr = new IntExpr(index, paradeclPos);
-//          exprAST = new ArrayExpr(vAST, indexExpr, declPos);
       }
       //otherwise: exprAST -> a[]
       tAST = new ArrayType(tAST, indexExpr, paradeclPos);

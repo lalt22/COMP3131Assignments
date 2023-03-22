@@ -1,13 +1,13 @@
 Program
   DeclList
-    LocalVarDecl
+    GloablVarDecl
       ArrType
         int
         IntExpr
           10
       a
     DeclList
-      LocalVarDecl
+      GloablVarDecl
         ArrType
           int
           EmptyExpr
