@@ -7,7 +7,13 @@ program'            -> (func-var-decl')*
  var-decl            -> type init-declarator-list ";"
 
 // func-var-decl'      -> type (identifier para-list compound-stmt | init-declarator-list ";")
- func-var-decl'      -> type identifier (( para-list compound-stmt) | ( "[" INTLITERAL? "]")? ( "=" initialiser )? ( "," init-declarator )* ";")
+ func-var-decl'      -> type identifier (
+                            ( para-list compound-stmt)
+                            |   ( "[" INTLITERAL? "]")?
+                                ( "=" initialiser )?
+                                ( "," init-declarator )*
+                                ";"
+                        )
 
 
 // init-declarator-list-> init-declarator ( "," init-declarator )*
@@ -94,7 +100,7 @@ rel-expr            -> additive-expr
                     |  rel-expr ">" additive-expr
                     |  rel-expr ">=" additive-expr
 rel-expr            -> additive-expr rel-expr'
-rel-expr            -> "<" additive-expr rel-expr' | "<=" additive-expr rel-expr'
+rel-expr'            -> "<" additive-expr rel-expr' | "<=" additive-expr rel-expr'
                         | ">" additive-expr rel-expr' | ">=" additive-expr rel-expr'
 
 

@@ -1,0 +1,10 @@
+Program
+  DeclList
+    FuncDecl
+      void
+      f
+      EmptyParaList
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
+    EmptyDeclList

@@ -1,0 +1,23 @@
+Program
+  DeclList
+    FuncDecl
+      void
+      f
+      ParaList
+        ParaDecl
+          ArrType
+            int
+            EmptyExpr
+          a
+        ParaList
+          ParaDecl
+            ArrType
+              float
+              IntExpr
+                10
+            f
+          EmptyParaList
+      CompoundStmt
+        EmptyDeclList
+        EmptyStmtList
+    EmptyDeclList

@@ -158,7 +158,10 @@ public class Recogniser {
         log("Parsing Compound Statement: " + currentToken);
         match(Token.LCURLY);
         while (currentToken.kind != Token.RCURLY) {
-            while (currentToken.kind == Token.INT || currentToken.kind == Token.FLOAT || currentToken.kind == Token.BOOLEAN || currentToken.kind == Token.VOID) {
+            while (currentToken.kind == Token.INT
+                    || currentToken.kind == Token.FLOAT
+                    || currentToken.kind == Token.BOOLEAN
+                    || currentToken.kind == Token.VOID) {
                 log("Parsing variable decl");
                 parseFuncOrVarDecl();
             }
