@@ -34,6 +34,10 @@ public final class SymbolTable {
   private int level;
   private IdEntry latest;
 
+  public int getLevel() {
+    return this.level;
+  }
+
   public SymbolTable () {
     level = 1;
     latest = null;
@@ -78,7 +82,7 @@ public final class SymbolTable {
   // otherwise returns the attribute field of the entry found.
 
   public Decl retrieve (String id) {
-
+//    System.out.println("Searching for ident: " + id + " at level: " + this.getLevel());
     IdEntry entry;
     Decl attr = null;
     boolean present = false, searching = true;
@@ -98,6 +102,7 @@ public final class SymbolTable {
   }
 
  public IdEntry retrieveOneLevel(String id) {
+//   System.out.println("Searching for ident: " + id + "  at level: " + this.getLevel());
     IdEntry entry;
 
     entry = this.latest;
